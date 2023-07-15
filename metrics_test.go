@@ -343,51 +343,11 @@ func TestNewSummaryWithLabels(t *testing.T) {
 	}
 }
 
-func TestRegisterMetrics(t *testing.T) {
+func TestRegisterComplexMetrics(t *testing.T) {
 	t.Parallel()
 
 	testCounter, err := NewCounterWithLabels(MetricsOpts{
 		Namespace: "test_counter",
-		Name:      "foo",
-		Help:      "bar",
-		Labels:    []string{"baz"},
-	})
-	if err != nil {
-		t.Errorf(err.Error())
-	}
-
-	testComplexMetricCounter, err := NewCounterWithLabels(MetricsOpts{
-		Namespace: "test_complex_counter",
-		Name:      "foo",
-		Help:      "bar",
-		Labels:    []string{"baz"},
-	})
-	if err != nil {
-		t.Errorf(err.Error())
-	}
-
-	testGauge, err := NewGaugeWithLabels(MetricsOpts{
-		Namespace: "test_gauge",
-		Name:      "foo",
-		Help:      "bar",
-		Labels:    []string{"baz"},
-	})
-	if err != nil {
-		t.Errorf(err.Error())
-	}
-
-	testHistogram, err := NewHistogramWithLabels(MetricsOpts{
-		Namespace: "test_histogram",
-		Name:      "foo",
-		Help:      "bar",
-		Labels:    []string{"baz"},
-	})
-	if err != nil {
-		t.Errorf(err.Error())
-	}
-
-	testSummary, err := NewSummaryWithLabels(MetricsOpts{
-		Namespace: "test_summary",
 		Name:      "foo",
 		Help:      "bar",
 		Labels:    []string{"baz"},
@@ -403,7 +363,7 @@ func TestRegisterMetrics(t *testing.T) {
 	type testInvalidComplexMetric struct{}
 
 	validComplexMetric := testValidComplexMetric{
-		Foo: testComplexMetricCounter,
+		Foo: testCounter,
 	}
 
 	invalidComplexMetric := testInvalidComplexMetric{}
@@ -412,22 +372,6 @@ func TestRegisterMetrics(t *testing.T) {
 		metrics interface{}
 		wantErr bool
 	}{
-		"valid type - Counter": {
-			metrics: *testCounter,
-			wantErr: false,
-		},
-		"valid type - Gauge": {
-			metrics: *testGauge,
-			wantErr: false,
-		},
-		"valid type - Histogram": {
-			metrics: *testHistogram,
-			wantErr: false,
-		},
-		"valid type - Summary": {
-			metrics: *testSummary,
-			wantErr: false,
-		},
 		"valid complex": {
 			metrics: validComplexMetric,
 			wantErr: false,
@@ -455,8 +399,8 @@ func TestRegisterMetrics(t *testing.T) {
 		wantErr := tt.wantErr
 
 		t.Run(name, func(t *testing.T) {
-			if err := RegisterMetrics(metrics); (err != nil) != wantErr {
-				t.Errorf("RegisterMetrics() error = %v, wantErr %v", err, wantErr)
+			if err := RegisterComplexMetrics(metrics); (err != nil) != wantErr {
+				t.Errorf("RegisterComplexMetrics() error = %v, wantErr %v", err, wantErr)
 			}
 		})
 	}

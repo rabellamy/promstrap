@@ -34,7 +34,7 @@ func main() {
 	})
 
 	// dereference struct to avoid panic
-	err = promstrap.RegisterMetrics(*reporter)
+	err = promstrap.RegisterComplexMetrics(*reporter)
 	if err != nil {
 		fmt.Println(err.Error())
 	}
