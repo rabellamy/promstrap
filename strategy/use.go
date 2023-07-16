@@ -78,3 +78,13 @@ func NewUSE(opts USEOpts) (*USE, error) {
 		Errors:      errorsCounter,
 	}, nil
 }
+
+// Register registers the USE strategy with the Prometheus DefaultRegisterer.
+func (u USE) Register() error {
+	err := RegisterStrategyFields(u)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}

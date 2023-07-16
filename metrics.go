@@ -1,9 +1,6 @@
 package promstrap
 
 import (
-	"errors"
-	"reflect"
-
 	"github.com/go-playground/validator"
 	"github.com/prometheus/client_golang/prometheus"
 )
@@ -87,32 +84,6 @@ func NewSummaryWithLabels(opts MetricsOpts) (*prometheus.SummaryVec, error) {
 		Help:      opts.Help,
 		Name:      opts.Name,
 	}, opts.Labels), nil
-}
-
-// RegisterMetrics registers the complex metrics strategies, metrics built as
-// custom types using structs, like the well known strategies (USE/RED/FourGoldenSignals).
-func RegisterComplexMetrics(metrics interface{}) error {
-	if reflect.ValueOf(metrics).Kind() != reflect.Struct {
-		return errors.New("complex metric is not built with a stuct")
-	}
-
-	l := reflect.TypeOf(metrics).NumField()
-	if l < 1 {
-		return errors.New("metric strategies needs at least one field")
-	}
-
-	values := reflect.ValueOf(metrics)
-
-	for i := 0; i < l; i++ {
-		m, ok := values.Field(i).Interface().(prometheus.Collector)
-		if !ok {
-			return errors.New("metric is not a Prometheus Collector")
-		}
-
-		prometheus.MustRegister(m)
-	}
-
-	return nil
 }
 
 // validate is a helper function to make sure that any required fields exist.

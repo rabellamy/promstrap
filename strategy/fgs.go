@@ -96,3 +96,14 @@ func NewFourGoldenSignals(opts FourGoldenSignalsOpts) (*FourGoldenSignals, error
 		Saturation: saturation,
 	}, nil
 }
+
+// Register registers the FourGoldenSignals strategy with the Prometheus
+// DefaultRegisterer.
+func (f FourGoldenSignals) Register() error {
+	err := RegisterStrategyFields(f)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
