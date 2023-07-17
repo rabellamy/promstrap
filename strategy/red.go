@@ -70,3 +70,13 @@ func NewRED(opts REDOpts) (*RED, error) {
 		Duration: durationHistogram,
 	}, nil
 }
+
+// Register registers the RED strategy with the Prometheus DefaultRegisterer.
+func (r RED) Register() error {
+	err := RegisterStrategyFields(r)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}

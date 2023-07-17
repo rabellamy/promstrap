@@ -8,7 +8,6 @@ import (
 
 	"github.com/go-chi/chi"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
-	"github.com/rabellamy/promstrap"
 	"github.com/rabellamy/promstrap/strategy"
 )
 
@@ -26,15 +25,18 @@ func doTheWork(wtb workTimeBox) {
 func main() {
 	var err error
 
-	reporter, _ := strategy.NewRED(strategy.REDOpts{
+	redExample, err := strategy.NewRED(strategy.REDOpts{
 		RequestType:    "http",
 		Namespace:      "bar",
 		RequestLabels:  []string{"path", "verb"},
 		DurationLabels: []string{"path"},
 	})
+	if err != nil {
+		fmt.Println(err.Error())
+	}
 
-	// dereference struct to avoid panic
-	err = promstrap.RegisterMetrics(*reporter)
+	// register metrics
+	err = redExample.Register()
 	if err != nil {
 		fmt.Println(err.Error())
 	}
@@ -48,7 +50,7 @@ func main() {
 	r.Get("/happy", func(w http.ResponseWriter, r *http.Request) {
 		t := time.Now()
 		// Records that a request took place
-		reporter.Requests.WithLabelValues("/happy", "GET").Inc()
+		redExample.Requests.WithLabelValues("/happy", "GET").Inc()
 
 		doTheWork(workTimeBox{
 			min: .01,
@@ -58,11 +60,11 @@ func main() {
 		_, err = w.Write([]byte("You are now happy!!\n"))
 		if err != nil {
 			// Records the error
-			reporter.Errors.WithLabelValues(err.Error()).Inc()
+			redExample.Errors.WithLabelValues(err.Error()).Inc()
 		}
 
 		// Records the duration of the request
-		reporter.Duration.WithLabelValues("/happy").Observe(time.Since(t).Seconds())
+		redExample.Duration.WithLabelValues("/happy").Observe(time.Since(t).Seconds())
 	})
 
 	err = http.ListenAndServe(":8080", r)

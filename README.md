@@ -32,10 +32,10 @@ Here are some of the benefits of instrumenting applications with Prometheus:
 package main
 
 import (
-	"fmt"
 	"net/http"
 
 	"github.com/go-chi/chi"
+	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/rabellamy/promstrap"
 )
@@ -53,10 +53,7 @@ func main() {
 		Labels:    []string{"color"},
 	})
 
-	err := promstrap.RegisterMetrics(candyCounter)
-	if err != nil {
-		fmt.Println(err.Error())
-	}
+	prometheus.MustRegister(candyCounter)
 
 	r := chi.NewRouter()
 	r.Get("/m&ms", func(w http.ResponseWriter, r *http.Request) {
@@ -72,7 +69,6 @@ func main() {
 
 	http.ListenAndServe(":8080", r)
 }
-
 ```
 
 #### Result
@@ -92,11 +88,11 @@ candy_mandm_total{color="yellow"} 10
 package main
 
 import (
-	"fmt"
 	"net/http"
 	"time"
 
 	"github.com/go-chi/chi"
+	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/rabellamy/promstrap"
 )
@@ -114,10 +110,7 @@ func main() {
 		Labels:    []string{"location"},
 	})
 
-	err := promstrap.RegisterMetrics(temp)
-	if err != nil {
-		fmt.Println(err.Error())
-	}
+	prometheus.MustRegister(temp)
 
 	r := chi.NewRouter()
 	r.Get("/temp", func(w http.ResponseWriter, r *http.Request) {
