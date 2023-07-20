@@ -8,6 +8,9 @@ type HistogramOpts struct {
 	Name      string   `validate:"required"`
 	Help      string   `validate:"required"`
 	Labels    []string `validate:"required"`
+	// Buckets defines the buckets into which observations are counted. Each
+	// element in the slice is the upper inclusive bound of a bucket.
+	Buckets []float64
 }
 
 // NewHistogramWithLabels creates a Prometheus histogram with labels based on the
@@ -15,15 +18,20 @@ type HistogramOpts struct {
 // A histogram samples observations (usually things like request durations or
 // response sizes) and counts them in configurable buckets. It also provides
 // a sum of all observed values.
-// TODO: make Objectives configurable.
 func NewHistogramWithLabels(opts HistogramOpts) (*prometheus.HistogramVec, error) {
 	if err := Validate(opts); err != nil {
 		return nil, err
 	}
 
-	return prometheus.NewHistogramVec(prometheus.HistogramOpts{
+	pOpts := prometheus.HistogramOpts{
 		Namespace: opts.Namespace,
 		Help:      opts.Help,
 		Name:      opts.Name,
-	}, opts.Labels), nil
+	}
+
+	if opts.Buckets != nil {
+		pOpts.Buckets = opts.Buckets
+	}
+
+	return prometheus.NewHistogramVec(pOpts, opts.Labels), nil
 }
