@@ -2,7 +2,7 @@ package strategy
 
 import (
 	"github.com/prometheus/client_golang/prometheus"
-	"github.com/rabellamy/promstrap"
+	promstrap "github.com/rabellamy/promstrap/metrics"
 )
 
 // USE describes a set of metrics that are useful for measuring the performance
@@ -42,7 +42,7 @@ func NewUSE(opts USEOpts) (*USE, error) {
 		return nil, err
 	}
 
-	utilizationGauge, err := promstrap.NewGaugeWithLabels(promstrap.MetricsOpts{
+	utilizationGauge, err := promstrap.NewGaugeWithLabels(promstrap.GaugeOpts{
 		Namespace: opts.Namespace,
 		Name:      opts.UtilizationName,
 		Help:      opts.UtilizationHelp,
@@ -52,7 +52,7 @@ func NewUSE(opts USEOpts) (*USE, error) {
 		return nil, err
 	}
 
-	saturationGauge, err := promstrap.NewGaugeWithLabels(promstrap.MetricsOpts{
+	saturationGauge, err := promstrap.NewGaugeWithLabels(promstrap.GaugeOpts{
 		Namespace: opts.Namespace,
 		Name:      opts.SaturationName,
 		Help:      opts.SaturationHelp,
@@ -62,7 +62,7 @@ func NewUSE(opts USEOpts) (*USE, error) {
 		return nil, err
 	}
 
-	errorsCounter, err := promstrap.NewCounterWithLabels(promstrap.MetricsOpts{
+	errorsCounter, err := promstrap.NewCounterWithLabels(promstrap.CounterOpts{
 		Namespace: opts.Namespace,
 		Name:      "errors_total",
 		Help:      "Number of errors",

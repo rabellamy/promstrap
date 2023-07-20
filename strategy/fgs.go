@@ -2,14 +2,14 @@ package strategy
 
 import (
 	"github.com/prometheus/client_golang/prometheus"
-	"github.com/rabellamy/promstrap"
+	promstrap "github.com/rabellamy/promstrap/metrics"
 )
 
 // FourGoldenSignals of monitoring are latency, traffic, errors, and saturation.
 // If you can only measure four metrics of your user-facing system, focus on these four.
 // https://sre.google/sre-book/monitoring-distributed-systems/
 type FourGoldenSignals struct {
-	// Latency is he time it takes to service a request. It’s important to
+	// Latency is the time it takes to service a request. It’s important to
 	// distinguish between the latency of successful requests and the latency of failed
 	// requests.
 	Latency *prometheus.HistogramVec
@@ -49,7 +49,7 @@ func NewFourGoldenSignals(opts FourGoldenSignalsOpts) (*FourGoldenSignals, error
 		return nil, err
 	}
 
-	latency, err := promstrap.NewHistogramWithLabels(promstrap.MetricsOpts{
+	latency, err := promstrap.NewHistogramWithLabels(promstrap.HistogramOpts{
 		Namespace: opts.Namespace,
 		Name:      opts.LatencyName,
 		Help:      opts.LatencyHelp,
@@ -59,7 +59,7 @@ func NewFourGoldenSignals(opts FourGoldenSignalsOpts) (*FourGoldenSignals, error
 		return nil, err
 	}
 
-	traffic, err := promstrap.NewCounterWithLabels(promstrap.MetricsOpts{
+	traffic, err := promstrap.NewCounterWithLabels(promstrap.CounterOpts{
 		Namespace: opts.Namespace,
 		Name:      opts.TrafficName,
 		Help:      opts.TrafficHelp,
@@ -69,7 +69,7 @@ func NewFourGoldenSignals(opts FourGoldenSignalsOpts) (*FourGoldenSignals, error
 		return nil, err
 	}
 
-	errors, err := promstrap.NewCounterWithLabels(promstrap.MetricsOpts{
+	errors, err := promstrap.NewCounterWithLabels(promstrap.CounterOpts{
 		Namespace: opts.Namespace,
 		Name:      "errors_total",
 		Help:      "Number of errors",
@@ -79,7 +79,7 @@ func NewFourGoldenSignals(opts FourGoldenSignalsOpts) (*FourGoldenSignals, error
 		return nil, err
 	}
 
-	saturation, err := promstrap.NewGaugeWithLabels(promstrap.MetricsOpts{
+	saturation, err := promstrap.NewGaugeWithLabels(promstrap.GaugeOpts{
 		Namespace: opts.Namespace,
 		Name:      opts.SaturationName,
 		Help:      opts.SaturationHelp,

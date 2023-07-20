@@ -4,7 +4,7 @@ import (
 	"fmt"
 
 	"github.com/prometheus/client_golang/prometheus"
-	"github.com/rabellamy/promstrap"
+	promstrap "github.com/rabellamy/promstrap/metrics"
 )
 
 // RED describes a set of metrics that work well for monitoring request-handling
@@ -34,7 +34,7 @@ func NewRED(opts REDOpts) (*RED, error) {
 		return nil, err
 	}
 
-	requestsCounter, err := promstrap.NewCounterWithLabels(promstrap.MetricsOpts{
+	requestsCounter, err := promstrap.NewCounterWithLabels(promstrap.CounterOpts{
 		Namespace: opts.Namespace,
 		Name:      fmt.Sprintf("%s_requests_total", opts.RequestType),
 		Help:      "Number of requests",
@@ -44,7 +44,7 @@ func NewRED(opts REDOpts) (*RED, error) {
 		return nil, err
 	}
 
-	errorsCounter, err := promstrap.NewCounterWithLabels(promstrap.MetricsOpts{
+	errorsCounter, err := promstrap.NewCounterWithLabels(promstrap.CounterOpts{
 		Namespace: opts.Namespace,
 		Name:      "errors_total",
 		Help:      "Number of errors",
@@ -54,7 +54,7 @@ func NewRED(opts REDOpts) (*RED, error) {
 		return nil, err
 	}
 
-	durationHistogram, err := promstrap.NewHistogramWithLabels(promstrap.MetricsOpts{
+	durationHistogram, err := promstrap.NewHistogramWithLabels(promstrap.HistogramOpts{
 		Namespace: opts.Namespace,
 		Name:      fmt.Sprintf("%s_request_duration_seconds_total", opts.RequestType),
 		Help:      "Duration of request in seconds",

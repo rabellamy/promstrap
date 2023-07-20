@@ -4,7 +4,7 @@ import (
 	"testing"
 
 	"github.com/prometheus/client_golang/prometheus"
-	"github.com/rabellamy/promstrap"
+	promstrap "github.com/rabellamy/promstrap/metrics"
 )
 
 type testValidStrategy struct {
@@ -25,7 +25,7 @@ func TestRegisterStrategyFields(t *testing.T) {
 
 	var err error
 
-	testCounter, err := promstrap.NewCounterWithLabels(promstrap.MetricsOpts{
+	testCounter, err := promstrap.NewCounterWithLabels(promstrap.CounterOpts{
 		Namespace: "test_counter",
 		Name:      "foo",
 		Help:      "bar",
@@ -43,7 +43,7 @@ func TestRegisterStrategyFields(t *testing.T) {
 		strategy Strategy
 		wantErr  bool
 	}{
-		"valid complex": {
+		"valid strategy": {
 			strategy: validComplexMetric,
 			wantErr:  false,
 		},
