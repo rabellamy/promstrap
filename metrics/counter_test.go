@@ -1,4 +1,4 @@
-package promstrap
+package metrics
 
 import (
 	"testing"

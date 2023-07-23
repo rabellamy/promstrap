@@ -1,6 +1,9 @@
-package promstrap
+package metrics
 
-import "github.com/prometheus/client_golang/prometheus"
+import (
+	"github.com/go-playground/validator"
+	"github.com/prometheus/client_golang/prometheus"
+)
 
 // SummaryOpts is the options for a Prometheus summary.
 type SummaryOpts struct {
@@ -20,7 +23,8 @@ type SummaryOpts struct {
 // sum of all observed values, it calculates configurable quantiles over
 // a sliding time window.
 func NewSummaryWithLabels(opts SummaryOpts) (*prometheus.SummaryVec, error) {
-	if err := Validate(opts); err != nil {
+	validate := validator.New()
+	if err := validate.Struct(opts); err != nil {
 		return nil, err
 	}
 

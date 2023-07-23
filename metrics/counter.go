@@ -1,6 +1,9 @@
-package promstrap
+package metrics
 
-import "github.com/prometheus/client_golang/prometheus"
+import (
+	"github.com/go-playground/validator"
+	"github.com/prometheus/client_golang/prometheus"
+)
 
 // CounterOpts is the options for a Prometheus counter.
 type CounterOpts struct {
@@ -17,7 +20,8 @@ type CounterOpts struct {
 // Counters are for tracking cumulative totals over time, like the total number
 // of HTTP requests or the number of errors.
 func NewCounterWithLabels(opts CounterOpts) (*prometheus.CounterVec, error) {
-	if err := Validate(opts); err != nil {
+	validate := validator.New()
+	if err := validate.Struct(opts); err != nil {
 		return nil, err
 	}
 

@@ -14,8 +14,8 @@ import (
 //
 //	type RED struct {
 //		Requests *prometheus.CounterVec
-//		Errors *prometheus.CounterVec
-//		Duration *prometheus.HistogramVec
+//		Errors   *prometheus.CounterVec
+//		Duration *Distribution
 //	}
 type Strategy interface {
 	Register() error

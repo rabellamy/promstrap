@@ -1,8 +1,9 @@
 package strategy
 
 import (
+	"github.com/go-playground/validator"
 	"github.com/prometheus/client_golang/prometheus"
-	promstrap "github.com/rabellamy/promstrap/metrics"
+	"github.com/rabellamy/promstrap/metrics"
 )
 
 // FourGoldenSignals of monitoring are latency, traffic, errors, and saturation.
@@ -12,7 +13,7 @@ type FourGoldenSignals struct {
 	// Latency is the time it takes to service a request. It’s important to
 	// distinguish between the latency of successful requests and the latency of failed
 	// requests.
-	Latency *prometheus.HistogramVec
+	Latency *Distribution
 	// Traffic is a measure of how much demand is being placed on your system,
 	// measured in a high-level system-specific metric. For a web service, this
 	// measurement is usually HTTP requests per second, perhaps broken out by the
@@ -31,35 +32,44 @@ type FourGoldenSignals struct {
 
 // FourGoldenSignalsOpts is the options for a FourGoldenSignals strategy.
 type FourGoldenSignalsOpts struct {
-	Namespace        string   `validate:"required"`
-	LatencyName      string   `validate:"required"`
-	LatencyHelp      string   `validate:"required"`
-	LatencyLabels    []string `validate:"required"`
-	TrafficName      string   `validate:"required"`
-	TrafficHelp      string   `validate:"required"`
-	TrafficLabels    []string `validate:"required"`
-	SaturationName   string   `validate:"required"`
-	SaturationHelp   string   `validate:"required"`
-	SaturationLabels []string `validate:"required"`
+	Namespace     string   `validate:"required"`
+	LatencyName   string   `validate:"required"`
+	LatencyHelp   string   `validate:"required"`
+	LatencyLabels []string `validate:"required"`
+	// Buckets defines the histogram buckets into which observations are counted. Each
+	// element in the slice is the upper inclusive bound of a bucket.
+	LatencyBuckets []float64
+	// Objectives defines the summary quantile rank estimates with their respective
+	// absolute error.
+	LatencyObjectives map[float64]float64
+	TrafficName       string   `validate:"required"`
+	TrafficHelp       string   `validate:"required"`
+	TrafficLabels     []string `validate:"required"`
+	SaturationName    string   `validate:"required"`
+	SaturationHelp    string   `validate:"required"`
+	SaturationLabels  []string `validate:"required"`
 }
 
 // NewFourGoldenSignals creates a new FourGoldenSignals strategy.
 func NewFourGoldenSignals(opts FourGoldenSignalsOpts) (*FourGoldenSignals, error) {
-	if err := promstrap.Validate(opts); err != nil {
+	validate := validator.New()
+	if err := validate.Struct(opts); err != nil {
 		return nil, err
 	}
 
-	latency, err := promstrap.NewHistogramWithLabels(promstrap.HistogramOpts{
-		Namespace: opts.Namespace,
-		Name:      opts.LatencyName,
-		Help:      opts.LatencyHelp,
-		Labels:    opts.LatencyLabels,
+	latency, err := NewDistribution(DistributionOpts{
+		Namespace:  opts.Namespace,
+		Name:       opts.LatencyName,
+		Help:       opts.LatencyHelp,
+		Labels:     opts.LatencyLabels,
+		Buckets:    opts.LatencyBuckets,
+		Objectives: opts.LatencyObjectives,
 	})
 	if err != nil {
 		return nil, err
 	}
 
-	traffic, err := promstrap.NewCounterWithLabels(promstrap.CounterOpts{
+	traffic, err := metrics.NewCounterWithLabels(metrics.CounterOpts{
 		Namespace: opts.Namespace,
 		Name:      opts.TrafficName,
 		Help:      opts.TrafficHelp,
@@ -69,7 +79,7 @@ func NewFourGoldenSignals(opts FourGoldenSignalsOpts) (*FourGoldenSignals, error
 		return nil, err
 	}
 
-	errors, err := promstrap.NewCounterWithLabels(promstrap.CounterOpts{
+	errors, err := metrics.NewCounterWithLabels(metrics.CounterOpts{
 		Namespace: opts.Namespace,
 		Name:      "errors_total",
 		Help:      "Number of errors",
@@ -79,7 +89,7 @@ func NewFourGoldenSignals(opts FourGoldenSignalsOpts) (*FourGoldenSignals, error
 		return nil, err
 	}
 
-	saturation, err := promstrap.NewGaugeWithLabels(promstrap.GaugeOpts{
+	saturation, err := metrics.NewGaugeWithLabels(metrics.GaugeOpts{
 		Namespace: opts.Namespace,
 		Name:      opts.SaturationName,
 		Help:      opts.SaturationHelp,

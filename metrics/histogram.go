@@ -1,6 +1,9 @@
-package promstrap
+package metrics
 
-import "github.com/prometheus/client_golang/prometheus"
+import (
+	"github.com/go-playground/validator"
+	"github.com/prometheus/client_golang/prometheus"
+)
 
 // HistogramOpts is the options for a Prometheus histogram.
 type HistogramOpts struct {
@@ -19,7 +22,8 @@ type HistogramOpts struct {
 // response sizes) and counts them in configurable buckets. It also provides
 // a sum of all observed values.
 func NewHistogramWithLabels(opts HistogramOpts) (*prometheus.HistogramVec, error) {
-	if err := Validate(opts); err != nil {
+	validate := validator.New()
+	if err := validate.Struct(opts); err != nil {
 		return nil, err
 	}
 

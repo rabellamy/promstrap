@@ -3,8 +3,9 @@ package strategy
 import (
 	"fmt"
 
+	"github.com/go-playground/validator"
 	"github.com/prometheus/client_golang/prometheus"
-	promstrap "github.com/rabellamy/promstrap/metrics"
+	"github.com/rabellamy/promstrap/metrics"
 )
 
 // RED describes a set of metrics that work well for monitoring request-handling
@@ -17,7 +18,7 @@ type RED struct {
 	// implicitly (for example, an HTTP 200 success response, but coupled with the wrong content).
 	Errors *prometheus.CounterVec
 	// Distributions of the amount of time each request takes
-	Duration *prometheus.HistogramVec
+	Duration *Distribution
 }
 
 // REDOpts is the options to create a RED strategy.
@@ -26,15 +27,22 @@ type REDOpts struct {
 	Namespace      string   `validate:"required"`
 	RequestLabels  []string `validate:"required"`
 	DurationLabels []string `validate:"required"`
+	// Buckets defines the histogram buckets into which observations are counted. Each
+	// element in the slice is the upper inclusive bound of a bucket.
+	Buckets []float64
+	// Objectives defines the summary quantile rank estimates with their respective
+	// absolute error.
+	Objectives map[float64]float64
 }
 
 // NewRED creates a RED strategy.
 func NewRED(opts REDOpts) (*RED, error) {
-	if err := promstrap.Validate(opts); err != nil {
+	validate := validator.New()
+	if err := validate.Struct(opts); err != nil {
 		return nil, err
 	}
 
-	requestsCounter, err := promstrap.NewCounterWithLabels(promstrap.CounterOpts{
+	requests, err := metrics.NewCounterWithLabels(metrics.CounterOpts{
 		Namespace: opts.Namespace,
 		Name:      fmt.Sprintf("%s_requests_total", opts.RequestType),
 		Help:      "Number of requests",
@@ -44,7 +52,7 @@ func NewRED(opts REDOpts) (*RED, error) {
 		return nil, err
 	}
 
-	errorsCounter, err := promstrap.NewCounterWithLabels(promstrap.CounterOpts{
+	errors, err := metrics.NewCounterWithLabels(metrics.CounterOpts{
 		Namespace: opts.Namespace,
 		Name:      "errors_total",
 		Help:      "Number of errors",
@@ -54,20 +62,22 @@ func NewRED(opts REDOpts) (*RED, error) {
 		return nil, err
 	}
 
-	durationHistogram, err := promstrap.NewHistogramWithLabels(promstrap.HistogramOpts{
-		Namespace: opts.Namespace,
-		Name:      fmt.Sprintf("%s_request_duration_seconds_total", opts.RequestType),
-		Help:      "Duration of request in seconds",
-		Labels:    opts.DurationLabels,
+	duration, err := NewDistribution(DistributionOpts{
+		Namespace:  opts.Namespace,
+		Name:       fmt.Sprintf("%s_request_duration_seconds_total", opts.RequestType),
+		Help:       "Duration of request in seconds",
+		Labels:     opts.DurationLabels,
+		Buckets:    opts.Buckets,
+		Objectives: opts.Objectives,
 	})
 	if err != nil {
 		return nil, err
 	}
 
 	return &RED{
-		Requests: requestsCounter,
-		Errors:   errorsCounter,
-		Duration: durationHistogram,
+		Requests: requests,
+		Errors:   errors,
+		Duration: duration,
 	}, nil
 }
 
