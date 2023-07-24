@@ -1,8 +1,9 @@
 package strategy
 
 import (
+	"github.com/go-playground/validator"
 	"github.com/prometheus/client_golang/prometheus"
-	"github.com/rabellamy/promstrap"
+	"github.com/rabellamy/promstrap/metrics"
 )
 
 // USE describes a set of metrics that are useful for measuring the performance
@@ -38,11 +39,12 @@ type USEOpts struct {
 
 // NEWUSE creates a USE strategy.
 func NewUSE(opts USEOpts) (*USE, error) {
-	if err := promstrap.Validate(opts); err != nil {
+	validate := validator.New()
+	if err := validate.Struct(opts); err != nil {
 		return nil, err
 	}
 
-	utilizationGauge, err := promstrap.NewGaugeWithLabels(promstrap.MetricsOpts{
+	utilizationGauge, err := metrics.NewGaugeWithLabels(metrics.GaugeOpts{
 		Namespace: opts.Namespace,
 		Name:      opts.UtilizationName,
 		Help:      opts.UtilizationHelp,
@@ -52,7 +54,7 @@ func NewUSE(opts USEOpts) (*USE, error) {
 		return nil, err
 	}
 
-	saturationGauge, err := promstrap.NewGaugeWithLabels(promstrap.MetricsOpts{
+	saturationGauge, err := metrics.NewGaugeWithLabels(metrics.GaugeOpts{
 		Namespace: opts.Namespace,
 		Name:      opts.SaturationName,
 		Help:      opts.SaturationHelp,
@@ -62,7 +64,7 @@ func NewUSE(opts USEOpts) (*USE, error) {
 		return nil, err
 	}
 
-	errorsCounter, err := promstrap.NewCounterWithLabels(promstrap.MetricsOpts{
+	errorsCounter, err := metrics.NewCounterWithLabels(metrics.CounterOpts{
 		Namespace: opts.Namespace,
 		Name:      "errors_total",
 		Help:      "Number of errors",

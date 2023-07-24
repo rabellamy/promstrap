@@ -17,23 +17,34 @@ func TestNewFourGoldenSignals(t *testing.T) {
 	}{
 		"all good": {
 			opts: FourGoldenSignalsOpts{
-				Namespace:        "foobar",
-				LatencyName:      "foo",
-				LatencyHelp:      "bar",
-				LatencyLabels:    []string{"baz", "qux", "quux"},
-				TrafficName:      "corge_total",
-				TrafficHelp:      "grault",
-				TrafficLabels:    []string{"garply", "waldo", "fred"},
-				SaturationName:   "plugh",
-				SaturationHelp:   "xyzzy,",
-				SaturationLabels: []string{"thud"},
+				Namespace:         "foobar",
+				LatencyName:       "foo",
+				LatencyHelp:       "bar",
+				LatencyBuckets:    []float64{.5, 1.5, 2.0},
+				LatencyObjectives: map[float64]float64{0.5: 0.05, 0.9: 0.01, 0.99: 0.001},
+				LatencyLabels:     []string{"baz", "qux", "quux"},
+				TrafficName:       "corge_total",
+				TrafficHelp:       "grault",
+				TrafficLabels:     []string{"garply", "waldo", "fred"},
+				SaturationName:    "plugh",
+				SaturationHelp:    "xyzzy,",
+				SaturationLabels:  []string{"thud"},
 			},
 			want: &FourGoldenSignals{
-				Latency: prometheus.NewHistogramVec(prometheus.HistogramOpts{
-					Namespace: "foobar",
-					Name:      "foo",
-					Help:      "bar",
-				}, []string{"baz", "qux", "quux"}),
+				Latency: &Distribution{
+					Histogram: prometheus.NewHistogramVec(prometheus.HistogramOpts{
+						Namespace: "foobar",
+						Name:      "foo_hist",
+						Help:      "bar",
+						Buckets:   []float64{.5, 1.5, 2.0},
+					}, []string{"baz", "qux", "quux"}),
+					Summary: prometheus.NewSummaryVec(prometheus.SummaryOpts{
+						Namespace:  "foobar",
+						Name:       "foo_sum",
+						Help:       "bar",
+						Objectives: map[float64]float64{0.5: 0.05, 0.9: 0.01, 0.99: 0.001},
+					}, []string{"baz", "qux", "quux"}),
+				},
 				Traffic: prometheus.NewCounterVec(prometheus.CounterOpts{
 					Namespace: "foobar",
 					Name:      "corge_total",

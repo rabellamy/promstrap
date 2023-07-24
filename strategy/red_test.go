@@ -21,6 +21,8 @@ func TestNewRED(t *testing.T) {
 				Namespace:      "bar",
 				RequestLabels:  []string{"jazz", "wiz", "fizz"},
 				DurationLabels: []string{"cuz", "buzz"},
+				Buckets:        []float64{.5, 1.5, 2.0},
+				Objectives:     map[float64]float64{0.5: 0.05, 0.9: 0.01, 0.99: 0.001},
 			},
 			want: &RED{
 				Requests: prometheus.NewCounterVec(prometheus.CounterOpts{
@@ -33,11 +35,20 @@ func TestNewRED(t *testing.T) {
 					Name:      "errors_total",
 					Help:      "Number of errors",
 				}, []string{"error"}),
-				Duration: prometheus.NewHistogramVec(prometheus.HistogramOpts{
-					Namespace: "bar",
-					Name:      "foo_request_duration_seconds",
-					Help:      "Duration of request in seconds",
-				}, []string{"cuz", "buzz"}),
+				Duration: &Distribution{
+					Histogram: prometheus.NewHistogramVec(prometheus.HistogramOpts{
+						Namespace: "foo",
+						Name:      "foo_request_duration_seconds_total_hist",
+						Help:      "Duration of request in seconds",
+						Buckets:   []float64{.5, 1.5, 2.0},
+					}, []string{"cuz", "buzz"}),
+					Summary: prometheus.NewSummaryVec(prometheus.SummaryOpts{
+						Namespace:  "foobar",
+						Name:       "foo_request_duration_seconds_total_sum",
+						Help:       "Duration of request in seconds",
+						Objectives: map[float64]float64{0.5: 0.05, 0.9: 0.01, 0.99: 0.001},
+					}, []string{"cuz", "buzz"}),
+				},
 			},
 			wantErr: false,
 		},

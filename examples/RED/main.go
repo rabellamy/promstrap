@@ -63,8 +63,11 @@ func main() {
 			redExample.Errors.WithLabelValues(err.Error()).Inc()
 		}
 
-		// Records the duration of the request
-		redExample.Duration.WithLabelValues("/happy").Observe(time.Since(t).Seconds())
+		// Records the duration of the request with a histogram
+		redExample.Duration.Histogram.WithLabelValues("/happy").Observe(time.Since(t).Seconds())
+
+		// Records the duration of the request with a summary
+		redExample.Duration.Summary.WithLabelValues("/happy").Observe(time.Since(t).Seconds())
 	})
 
 	err = http.ListenAndServe(":8080", r)
