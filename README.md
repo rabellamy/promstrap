@@ -25,106 +25,112 @@ Here are some of the benefits of instrumenting applications with Prometheus:
 - Enhanced ability to prevent problems from occurring
 - Increased agility and responsiveness to changes
 
-## Usage
+## Basic Usage
 
 ### Counter
 ```go
-package main
-
-import (
-	"net/http"
-
-	"github.com/go-chi/chi"
-	"github.com/prometheus/client_golang/prometheus"
-	"github.com/prometheus/client_golang/prometheus/promhttp"
-	"github.com/rabellamy/promstrap"
-)
-
-func main() {
-	go func() {
-		http.Handle("/metrics", promhttp.Handler())
-		http.ListenAndServe(":2112", nil)
-	}()
-
-	candyCounter, _ := promstrap.NewCounterWithLabels(promstrap.MetricsOpts{
-		Namespace: "candy",
-		Name:      "mandm_total",
-		Help:      "Counts the number of M&Ms",
-		Labels:    []string{"color"},
-	})
-
-	prometheus.MustRegister(candyCounter)
-
-	r := chi.NewRouter()
-	r.Get("/m&ms", func(w http.ResponseWriter, r *http.Request) {
-		w.Write([]byte("M&Ms!!\n"))
-
-		candyCounter.WithLabelValues("red").Add(10)
-		candyCounter.WithLabelValues("orange").Add(5)
-		candyCounter.WithLabelValues("green").Add(5)
-		candyCounter.WithLabelValues("blue").Add(5)
-		candyCounter.WithLabelValues("yellow").Add(10)
-		candyCounter.WithLabelValues("brown").Add(15)
-	})
-
-	http.ListenAndServe(":8080", r)
+// Creates a Prometheus counter with labels to count the number of errors.
+// A counter is a cumulative metric that represents a single monotonically
+// increasing counter whose value can only increase or be reset to zero on restart.
+errors, err := metrics.NewCounterWithLabels(metrics.CounterOpts{
+	Namespace: "service_name",
+	Name:      "errors_total",
+	Help:      "Number of errors",
+	Labels:    []string{"error"},
+})
+if err != nil {
+	return nil, err
 }
-```
 
-#### Result
-```
-# HELP candy_mandm_total Counts the number of M&Ms
-# TYPE candy_mandm_total counter
-candy_mandm_total{color="blue"} 5
-candy_mandm_total{color="brown"} 15
-candy_mandm_total{color="green"} 5
-candy_mandm_total{color="orange"} 5
-candy_mandm_total{color="red"} 10
-candy_mandm_total{color="yellow"} 10
+
+// Registers errors with the Prometheus DefaultRegisterer
+prometheus.MustRegister(errors)
+
+// Increment by 1
+errors.WithLabelValues("my error").Inc()
 ```
 
 ### Gauge
 ```go
-package main
-
-import (
-	"net/http"
-	"time"
-
-	"github.com/go-chi/chi"
-	"github.com/prometheus/client_golang/prometheus"
-	"github.com/prometheus/client_golang/prometheus/promhttp"
-	"github.com/rabellamy/promstrap"
-)
-
-func main() {
-	go func() {
-		http.Handle("/metrics", promhttp.Handler())
-		http.ListenAndServe(":2112", nil)
-	}()
-
-	temp, _ := promstrap.NewGaugeWithLabels(promstrap.MetricsOpts{
-		Namespace: "weather",
-		Name:      "current_temperature_celsius",
-		Help:      "The current temperature Celsius",
-		Labels:    []string{"location"},
-	})
-
-	prometheus.MustRegister(temp)
-
-	r := chi.NewRouter()
-	r.Get("/temp", func(w http.ResponseWriter, r *http.Request) {
-		w.Write([]byte("It's hot!!\n"))
-		temp.WithLabelValues(time.Now().Format("New York, NY")).Set(42)
-	})
-
-	http.ListenAndServe(":8080", r)
+// Creates a Prometheus Gauge with labels to measure the length of a queue.
+// A gauge is a metric that represents a single numerical value that can
+// arbitrarily go up and down.
+length, err := metrics.NewGaugeWithLabels(metrics.GaugeOpts{
+	Namespace: "service_name",
+	Name:      "queue_length",
+	Help:      "The number of items in the queue.",
+	Labels:    []string{"queue"},
+})
+if err != nil {
+	return nil, err
 }
+
+// Registers length with the Prometheus DefaultRegisterer
+prometheus.MustRegister(length)
+
+// Use Set() when you know the absolute value
+length.WithLabelValues("foo").Set(0)
+
+// Increment by 1
+length.WithLabelValues("foo").Inc()
+// Decrement by 1
+length.WithLabelValues("foo").Dec()
+// Increment by 14
+length.WithLabelValues("foo").Add(14)
+// Decrement by 7
+length.WithLabelValues("foo").Sub(7)
 ```
 
-#### Result
+### Histogram
+```go
+// Creates a Prometheus Histogram with labels to measure the duration of request
+// in seconds.
+// A histogram samples observations (usually things like request durations or
+// response sizes) and counts them in configurable buckets.
+duration, err := metrics.NewHistogramWithLabels(metrics.HistogramOpts{
+	Namespace: "service_name",
+	Name:      "http_request_duration_seconds",
+	Help:      "Duration of request in seconds",
+	Labels:    []string{"path"},
+	Buckets:   []float64{0.05, 0.1, 0.25, 0.5, 1, 2.5, 5, 10},
+})
+if err != nil {
+	return nil, err
+}
+
+// Registers duration with the Prometheus DefaultRegisterer
+prometheus.MustRegister(duration)
+
+// Record that the HTTP request to the /happy path took 0.5 seconds to serve
+duration.WithLabelValues("/happy").Observe(0.5)
 ```
-# HELP weather_current_temperature_celsius The current temperature Celsius
-# TYPE weather_current_temperature_celsius gauge
-weather_current_temperature_celsius{date="06-30-2023 21:59:38"} 42
+
+### Summary
+```go
+// Creates a Prometheus Summary with labels to measure the duration of request
+// in seconds.
+// A summary samples observations (usually things like request durations and
+// response sizes).
+duration, err := metrics.NewSummaryWithLabels(metrics.SummaryOpts{
+	Namespace: "service_name",
+	Name:      "http_request_duration_seconds",
+	Help:      "Duration of request in seconds",
+	Labels:    []string{"path"},
+	// Objectives defines the quantile rank estimates with their respective
+	// absolute error.
+	Objectives: map[float64]float64{
+		0.5:  0.05,  // 50th percentile with a max. absolute error of 0.05.
+		0.9:  0.01,  // 90th percentile with a max. absolute error of 0.01.
+		0.99: 0.001, // 99th percentile with a max. absolute error of 0.001.
+	},
+})
+if err != nil {
+	return nil, err
+}
+
+// Registers duration with the Prometheus DefaultRegisterer
+prometheus.MustRegister(duration)
+
+// Record that the HTTP request to the /happy path took 0.5 seconds to serve
+duration.WithLabelValues("/happy").Observe(0.5)
 ```
