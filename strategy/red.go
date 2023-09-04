@@ -64,7 +64,7 @@ func NewRED(opts REDOpts) (*RED, error) {
 
 	duration, err := NewDistribution(DistributionOpts{
 		Namespace:  opts.Namespace,
-		Name:       fmt.Sprintf("%s_request_duration_seconds_total", opts.RequestType),
+		Name:       fmt.Sprintf("%s_request_duration_seconds", opts.RequestType),
 		Help:       "Duration of request in seconds",
 		Labels:     opts.DurationLabels,
 		Buckets:    opts.Buckets,
