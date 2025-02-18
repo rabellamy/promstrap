@@ -172,6 +172,21 @@ func TestNewRED(t *testing.T) {
 			want:    nil,
 			wantErr: true,
 		},
+		"invalid buckets": {
+			opts: REDOpts{
+				Namespace: "bar",
+				RequestsOpt: RequestsOpt{
+					RequestType:   "foo",
+					RequestLabels: []string{"label"},
+				},
+				DurationOpt: DurationOpt{
+					DurationLabels: []string{"label"},
+					Buckets:        []float64{2.0, 1.0}, // Invalid order
+				},
+			},
+			want:    nil,
+			wantErr: true,
+		},
 	}
 
 	for name, tt := range tests {

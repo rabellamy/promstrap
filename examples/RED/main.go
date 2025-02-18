@@ -26,10 +26,17 @@ func main() {
 	var err error
 
 	redExample, err := strategy.NewRED(strategy.REDOpts{
-		RequestType:    "http",
-		Namespace:      "bar",
-		RequestLabels:  []string{"path", "verb"},
-		DurationLabels: []string{"path"},
+		Namespace: "bar",
+		RequestsOpt: strategy.RequestsOpt{
+			RequestType:   "http",
+			RequestLabels: []string{"path", "verb"},
+		},
+		ErrorsOpt: strategy.ErrorsOpt{
+			ErrorLabels: []string{"error"},
+		},
+		DurationOpt: strategy.DurationOpt{
+			DurationLabels: []string{"path"},
+		},
 	})
 	if err != nil {
 		fmt.Println(err.Error())

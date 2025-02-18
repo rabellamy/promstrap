@@ -32,7 +32,7 @@ func TestRegisterStrategyFields(t *testing.T) {
 		Labels:    []string{"baz"},
 	})
 	if err != nil {
-		t.Errorf(err.Error())
+		t.Error(err)
 	}
 
 	validComplexMetric := testValidStrategy{
