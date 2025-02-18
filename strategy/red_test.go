@@ -45,13 +45,13 @@ func TestNewRED(t *testing.T) {
 				Duration: &Distribution{
 					Histogram: prometheus.NewHistogramVec(prometheus.HistogramOpts{
 						Namespace: "bar",
-						Name:      "foo_request_duration_seconds_total_hist",
+						Name:      "foo_request_duration_seconds_hist",
 						Help:      "Duration of request in seconds",
 						Buckets:   []float64{.5, 1.5, 2.0},
 					}, []string{"cuz", "buzz"}),
 					Summary: prometheus.NewSummaryVec(prometheus.SummaryOpts{
 						Namespace:  "bar",
-						Name:       "foo_request_duration_seconds_total_sum",
+						Name:       "foo_request_duration_seconds_sum",
 						Help:       "Duration of request in seconds",
 						Objectives: map[float64]float64{0.5: 0.05, 0.9: 0.01, 0.99: 0.001},
 					}, []string{"cuz", "buzz"}),
@@ -92,13 +92,13 @@ func TestNewRED(t *testing.T) {
 				Duration: &Distribution{
 					Histogram: prometheus.NewHistogramVec(prometheus.HistogramOpts{
 						Namespace: "bar",
-						Name:      "custom_duration_total_hist",
+						Name:      "custom_duration_hist",
 						Help:      "Duration of request in seconds",
 						Buckets:   []float64{.5, 1.5, 2.0},
 					}, []string{"cuz", "buzz"}),
 					Summary: prometheus.NewSummaryVec(prometheus.SummaryOpts{
 						Namespace:  "bar",
-						Name:       "custom_duration_total_sum",
+						Name:       "custom_duration_sum",
 						Help:       "Duration of request in seconds",
 						Objectives: map[float64]float64{0.5: 0.05, 0.9: 0.01, 0.99: 0.001},
 					}, []string{"cuz", "buzz"}),
