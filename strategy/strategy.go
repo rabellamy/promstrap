@@ -34,7 +34,10 @@ func RegisterStrategyFields(s Strategy) error {
 	for i := 0; i < l; i++ {
 		switch v := values.Field(i).Interface().(type) {
 		case prometheus.Collector:
-			prometheus.MustRegister(v)
+			err := prometheus.Register(v)
+			if err != nil {
+				return err
+			}
 
 		// Allows for the composability of strategies
 		case Strategy:
