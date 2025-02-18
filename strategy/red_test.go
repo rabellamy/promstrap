@@ -15,14 +15,21 @@ func TestNewRED(t *testing.T) {
 		want    *RED
 		wantErr bool
 	}{
-		"all good": {
+		"default names": {
 			opts: REDOpts{
-				RequestType:    "foo",
-				Namespace:      "bar",
-				RequestLabels:  []string{"jazz", "wiz", "fizz"},
-				DurationLabels: []string{"cuz", "buzz"},
-				Buckets:        []float64{.5, 1.5, 2.0},
-				Objectives:     map[float64]float64{0.5: 0.05, 0.9: 0.01, 0.99: 0.001},
+				Namespace: "bar",
+				RequestsOpt: RequestsOpt{
+					RequestType:   "foo",
+					RequestLabels: []string{"jazz", "wiz", "fizz"},
+				},
+				ErrorsOpt: ErrorsOpt{
+					ErrorLabels: []string{"error"},
+				},
+				DurationOpt: DurationOpt{
+					DurationLabels: []string{"cuz", "buzz"},
+					Buckets:        []float64{.5, 1.5, 2.0},
+					Objectives:     map[float64]float64{0.5: 0.05, 0.9: 0.01, 0.99: 0.001},
+				},
 			},
 			want: &RED{
 				Requests: prometheus.NewCounterVec(prometheus.CounterOpts{
@@ -37,14 +44,61 @@ func TestNewRED(t *testing.T) {
 				}, []string{"error"}),
 				Duration: &Distribution{
 					Histogram: prometheus.NewHistogramVec(prometheus.HistogramOpts{
-						Namespace: "foo",
+						Namespace: "bar",
 						Name:      "foo_request_duration_seconds_total_hist",
 						Help:      "Duration of request in seconds",
 						Buckets:   []float64{.5, 1.5, 2.0},
 					}, []string{"cuz", "buzz"}),
 					Summary: prometheus.NewSummaryVec(prometheus.SummaryOpts{
-						Namespace:  "foobar",
+						Namespace:  "bar",
 						Name:       "foo_request_duration_seconds_total_sum",
+						Help:       "Duration of request in seconds",
+						Objectives: map[float64]float64{0.5: 0.05, 0.9: 0.01, 0.99: 0.001},
+					}, []string{"cuz", "buzz"}),
+				},
+			},
+			wantErr: false,
+		},
+		"custom names": {
+			opts: REDOpts{
+				Namespace: "bar",
+				RequestsOpt: RequestsOpt{
+					RequestType:   "foo",
+					RequestName:   "custom_requests",
+					RequestLabels: []string{"jazz", "wiz", "fizz"},
+				},
+				ErrorsOpt: ErrorsOpt{
+					ErrorName:   "custom_errors",
+					ErrorLabels: []string{"error"},
+				},
+				DurationOpt: DurationOpt{
+					DurationName:   "custom_duration",
+					DurationLabels: []string{"cuz", "buzz"},
+					Buckets:        []float64{.5, 1.5, 2.0},
+					Objectives:     map[float64]float64{0.5: 0.05, 0.9: 0.01, 0.99: 0.001},
+				},
+			},
+			want: &RED{
+				Requests: prometheus.NewCounterVec(prometheus.CounterOpts{
+					Namespace: "bar",
+					Name:      "custom_requests",
+					Help:      "Number of requests",
+				}, []string{"jazz", "wiz", "fizz"}),
+				Errors: prometheus.NewCounterVec(prometheus.CounterOpts{
+					Namespace: "bar",
+					Name:      "custom_errors",
+					Help:      "Number of errors",
+				}, []string{"error"}),
+				Duration: &Distribution{
+					Histogram: prometheus.NewHistogramVec(prometheus.HistogramOpts{
+						Namespace: "bar",
+						Name:      "custom_duration_total_hist",
+						Help:      "Duration of request in seconds",
+						Buckets:   []float64{.5, 1.5, 2.0},
+					}, []string{"cuz", "buzz"}),
+					Summary: prometheus.NewSummaryVec(prometheus.SummaryOpts{
+						Namespace:  "bar",
+						Name:       "custom_duration_total_sum",
 						Help:       "Duration of request in seconds",
 						Objectives: map[float64]float64{0.5: 0.05, 0.9: 0.01, 0.99: 0.001},
 					}, []string{"cuz", "buzz"}),
@@ -54,40 +108,66 @@ func TestNewRED(t *testing.T) {
 		},
 		"missing RequestType": {
 			opts: REDOpts{
-				RequestType:    "",
-				Namespace:      "pineapple",
-				RequestLabels:  []string{"jazz", "wiz", "fizz"},
-				DurationLabels: []string{"cuz", "buzz"},
+				Namespace: "pineapple",
+				RequestsOpt: RequestsOpt{
+					RequestLabels: []string{"jazz", "wiz", "fizz"},
+				},
+				ErrorsOpt: ErrorsOpt{
+					ErrorLabels: []string{"error"},
+				},
+				DurationOpt: DurationOpt{
+					DurationLabels: []string{"cuz", "buzz"},
+				},
 			},
 			want:    nil,
 			wantErr: true,
 		},
 		"missing Namespace": {
 			opts: REDOpts{
-				RequestType:    "radish",
-				Namespace:      "",
-				RequestLabels:  []string{"jazz", "wiz", "fizz"},
-				DurationLabels: []string{"cuz", "buzz"},
+				RequestsOpt: RequestsOpt{
+					RequestType:   "radish",
+					RequestLabels: []string{"jazz", "wiz", "fizz"},
+				},
+				ErrorsOpt: ErrorsOpt{
+					ErrorLabels: []string{"error"},
+				},
+				DurationOpt: DurationOpt{
+					DurationLabels: []string{"cuz", "buzz"},
+				},
 			},
 			want:    nil,
 			wantErr: true,
 		},
 		"missing RequestLabels": {
 			opts: REDOpts{
-				RequestType:    "dill",
-				Namespace:      "pickle",
-				RequestLabels:  nil,
-				DurationLabels: []string{"cuz", "buzz"},
+				Namespace: "pickle",
+				RequestsOpt: RequestsOpt{
+					RequestType:   "dill",
+					RequestLabels: nil,
+				},
+				ErrorsOpt: ErrorsOpt{
+					ErrorLabels: []string{"error"},
+				},
+				DurationOpt: DurationOpt{
+					DurationLabels: []string{"cuz", "buzz"},
+				},
 			},
 			want:    nil,
 			wantErr: true,
 		},
 		"missing DurationLabels": {
 			opts: REDOpts{
-				RequestType:    "tiny",
-				Namespace:      "house",
-				RequestLabels:  []string{"jazz", "wiz", "fizz"},
-				DurationLabels: nil,
+				Namespace: "house",
+				RequestsOpt: RequestsOpt{
+					RequestType:   "tiny",
+					RequestLabels: []string{"jazz", "wiz", "fizz"},
+				},
+				ErrorsOpt: ErrorsOpt{
+					ErrorLabels: []string{"error"},
+				},
+				DurationOpt: DurationOpt{
+					DurationLabels: nil,
+				},
 			},
 			want:    nil,
 			wantErr: true,
@@ -112,4 +192,30 @@ func TestNewRED(t *testing.T) {
 			assert.EqualExportedValues(t, *want, *got)
 		})
 	}
+}
+
+func TestREDMetricNames(t *testing.T) {
+	t.Parallel()
+
+	red, err := NewRED(REDOpts{
+		Namespace: "test",
+		RequestsOpt: RequestsOpt{
+			RequestType:   "http",
+			RequestName:   "custom_requests",
+			RequestLabels: []string{"method"},
+		},
+		ErrorsOpt: ErrorsOpt{
+			ErrorName:   "custom_errors",
+			ErrorLabels: []string{"type"},
+		},
+		DurationOpt: DurationOpt{
+			DurationName:   "custom_duration",
+			DurationLabels: []string{"endpoint"},
+		},
+	})
+
+	assert.NoError(t, err)
+	assert.Equal(t, "custom_requests", red.RequestCounterName())
+	assert.Equal(t, "custom_errors", red.ErrorCounterName())
+	assert.Equal(t, "custom_duration", red.DurationHistogramName())
 }
