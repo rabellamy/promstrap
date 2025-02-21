@@ -28,7 +28,7 @@ type USE struct {
 	useOpts USEOpts
 }
 
-type UtilizationOpt struct {
+type USEUtilizationOpt struct {
 	// UtilizationName is the name of the utilization metric. If not specified, defaults to "utilization".
 	UtilizationName string `validate:"required"`
 	// UtilizationHelp is the help text for the utilization metric.
@@ -37,7 +37,7 @@ type UtilizationOpt struct {
 	UtilizationLabels []string `validate:"required"`
 }
 
-type SaturationOpt struct {
+type USESaturationOpt struct {
 	// SaturationName is the name of the saturation metric. If not specified, defaults to "saturation".
 	SaturationName string `validate:"required"`
 	// SaturationHelp is the help text for the saturation metric.
@@ -46,7 +46,7 @@ type SaturationOpt struct {
 	SaturationLabels []string `validate:"required"`
 }
 
-type ErrorsOpt struct {
+type USEErrorsOpt struct {
 	// ErrorName is the name of the errors metric. If not specified, defaults to "errors_total".
 	ErrorName string
 	// ErrorLabels are the labels to attach to the errors metric.
@@ -55,10 +55,10 @@ type ErrorsOpt struct {
 
 // USEOpts is the options to create a USE strategy.
 type USEOpts struct {
-	Namespace      string         `validate:"required"`
-	UtilizationOpt UtilizationOpt `validate:"required"`
-	SaturationOpt  SaturationOpt  `validate:"required"`
-	ErrorsOpt      ErrorsOpt      `validate:"required"`
+	Namespace      string            `validate:"required"`
+	UtilizationOpt USEUtilizationOpt `validate:"required"`
+	SaturationOpt  USESaturationOpt  `validate:"required"`
+	ErrorsOpt      USEErrorsOpt      `validate:"required"`
 }
 
 // NewUSE creates a USE strategy.
@@ -68,7 +68,7 @@ func NewUSE(opts USEOpts) (*USE, error) {
 		return nil, err
 	}
 
-	utilizationName := getUtilizationMetricName(opts)
+	utilizationName := getUSEUtilizationMetricName(opts)
 	utilizationGauge, err := metrics.NewGaugeWithLabels(metrics.GaugeOpts{
 		Namespace: opts.Namespace,
 		Name:      utilizationName,
@@ -79,7 +79,7 @@ func NewUSE(opts USEOpts) (*USE, error) {
 		return nil, err
 	}
 
-	saturationName := getSaturationMetricName(opts)
+	saturationName := getUSESaturationMetricName(opts)
 	saturationGauge, err := metrics.NewGaugeWithLabels(metrics.GaugeOpts{
 		Namespace: opts.Namespace,
 		Name:      saturationName,
@@ -90,7 +90,7 @@ func NewUSE(opts USEOpts) (*USE, error) {
 		return nil, err
 	}
 
-	errorsName := getErrorsMetricName(opts)
+	errorsName := getUSEErrorsMetricName(opts)
 	errorsCounter, err := metrics.NewCounterWithLabels(metrics.CounterOpts{
 		Namespace: opts.Namespace,
 		Name:      errorsName,
@@ -105,7 +105,7 @@ func NewUSE(opts USEOpts) (*USE, error) {
 		Utilization: utilizationGauge,
 		Saturation:  saturationGauge,
 		Errors:      errorsCounter,
-		useOpts:    opts,
+		useOpts:     opts,
 	}, nil
 }
 
@@ -121,34 +121,34 @@ func (u USE) Register() error {
 
 // UtilizationGaugeName returns the name of the utilization metric.
 func (u USE) UtilizationGaugeName() string {
-	return getUtilizationMetricName(u.useOpts)
+	return getUSEUtilizationMetricName(u.useOpts)
 }
 
 // SaturationGaugeName returns the name of the saturation metric.
 func (u USE) SaturationGaugeName() string {
-	return getSaturationMetricName(u.useOpts)
+	return getUSESaturationMetricName(u.useOpts)
 }
 
 // ErrorCounterName returns the name of the errors metric.
 func (u USE) ErrorCounterName() string {
-	return getErrorsMetricName(u.useOpts)
+	return getUSEErrorsMetricName(u.useOpts)
 }
 
-func getUtilizationMetricName(opts USEOpts) string {
+func getUSEUtilizationMetricName(opts USEOpts) string {
 	if opts.UtilizationOpt.UtilizationName != "" {
 		return opts.UtilizationOpt.UtilizationName
 	}
 	return "utilization"
 }
 
-func getSaturationMetricName(opts USEOpts) string {
+func getUSESaturationMetricName(opts USEOpts) string {
 	if opts.SaturationOpt.SaturationName != "" {
 		return opts.SaturationOpt.SaturationName
 	}
 	return "saturation"
 }
 
-func getErrorsMetricName(opts USEOpts) string {
+func getUSEErrorsMetricName(opts USEOpts) string {
 	if opts.ErrorsOpt.ErrorName != "" {
 		return opts.ErrorsOpt.ErrorName
 	}
