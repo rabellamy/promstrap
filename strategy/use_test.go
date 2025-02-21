@@ -154,5 +154,53 @@ func TestNewUSE(t *testing.T) {
 			}
 			assert.EqualExportedValues(t, *want, *got)
 		})
-	}
+func TestUSEMetricNames(t *testing.T) {
+	t.Parallel()
+
+	// Test for custom names
+	use, err := NewUSE(USEOpts{
+		Namespace: "test",
+		UtilizationOpt: USEUtilizationOpt{
+			UtilizationName:   "custom_utilization",
+			UtilizationHelp:   "Test utilization help",
+			UtilizationLabels: []string{"label"},
+		},
+		SaturationOpt: USESaturationOpt{
+			SaturationName:   "custom_saturation",
+			SaturationHelp:   "Test saturation help",
+			SaturationLabels: []string{"label"},
+		},
+		ErrorsOpt: USEErrorsOpt{
+			ErrorName:   "custom_errors",
+			ErrorLabels: []string{"error"},
+		},
+	})
+
+	assert.NoError(t, err)
+	assert.Equal(t, "custom_utilization", use.UtilizationMetricName())
+	assert.Equal(t, "custom_saturation", use.SaturationMetricName())
+	assert.Equal(t, "custom_errors", use.ErrorMetricName())
+
+	// Test for default names
+	useDefault, err := NewUSE(USEOpts{
+		Namespace: "test",
+		UtilizationOpt: USEUtilizationOpt{
+			UtilizationName:   "utilization",
+			UtilizationHelp:   "Test utilization help",
+			UtilizationLabels: []string{"label"},
+		},
+		SaturationOpt: USESaturationOpt{
+			SaturationName:   "saturation",
+			SaturationHelp:   "Test saturation help",
+			SaturationLabels: []string{"label"},
+		},
+		ErrorsOpt: USEErrorsOpt{
+			ErrorLabels: []string{"error"},
+		},
+	})
+
+	assert.NoError(t, err)
+	assert.Equal(t, "utilization", useDefault.UtilizationMetricName())
+	assert.Equal(t, "saturation", useDefault.SaturationMetricName())
+	assert.Equal(t, "errors_total", useDefault.ErrorMetricName())
 }

@@ -119,18 +119,18 @@ func (u USE) Register() error {
 	return nil
 }
 
-// UtilizationGaugeName returns the name of the utilization metric.
-func (u USE) UtilizationGaugeName() string {
+// UtilizationMetricName returns the name of the utilization metric.
+func (u USE) UtilizationMetricName() string {
 	return getUSEUtilizationMetricName(u.useOpts)
 }
 
-// SaturationGaugeName returns the name of the saturation metric.
-func (u USE) SaturationGaugeName() string {
+// SaturationMetricName returns the name of the saturation metric.
+func (u USE) SaturationMetricName() string {
 	return getUSESaturationMetricName(u.useOpts)
 }
 
-// ErrorCounterName returns the name of the errors metric.
-func (u USE) ErrorCounterName() string {
+// ErrorMetricName returns the name of the errors metric.
+func (u USE) ErrorMetricName() string {
 	return getUSEErrorsMetricName(u.useOpts)
 }
 
