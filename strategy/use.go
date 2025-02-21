@@ -46,6 +46,13 @@ type USEUtilizationOpt struct {
 
 type USESaturationOpt struct {
 	// SaturationName is the name of the saturation metric.
+	// The name should follow the pattern {resource}_saturation_{unit} to clearly indicate
+	// what resource is being measured and its unit of measurement.
+	// Examples:
+	// - cpu_saturation_load1
+	// - memory_saturation_bytes
+	// - disk_saturation_queue_depth
+	// - thread_pool_saturation_pending_tasks
 	SaturationName string `validate:"required"`
 	// SaturationHelp is the help text for the saturation metric.
 	SaturationHelp string `validate:"required"`
