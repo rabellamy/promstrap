@@ -27,14 +27,14 @@ func main() {
 
 	redExample, err := strategy.NewRED(strategy.REDOpts{
 		Namespace: "bar",
-		RequestsOpt: strategy.RequestsOpt{
+		RequestsOpt: strategy.REDRequestsOpt{
 			RequestType:   "http",
 			RequestLabels: []string{"path", "verb"},
 		},
-		ErrorsOpt: strategy.ErrorsOpt{
+		ErrorsOpt: strategy.USEErrorOpt{
 			ErrorLabels: []string{"error"},
 		},
-		DurationOpt: strategy.DurationOpt{
+		DurationOpt: strategy.REDDurationOpt{
 			DurationLabels: []string{"path"},
 		},
 	})
