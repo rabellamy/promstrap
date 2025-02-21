@@ -21,8 +21,13 @@ type FourGoldenSignals struct {
 }
 
 type FGSLatencyOpt struct {
-	// LatencyName is the name of the latency metric. If not specified, defaults to "{LatencyType}_latency_seconds"
-	LatencyName string
+	// LatencyName must be explicitly set.
+	// Should follow the pattern {system}_{type}_latency_seconds
+	// Examples:
+	// - http_request_latency_seconds
+	// - grpc_method_latency_seconds
+	// - database_query_latency_seconds
+	LatencyName string `validate:"required"`
 	// LatencyType is the type of latency being measured (e.g., "http", "grpc", "database")
 	LatencyType string `validate:"required"`
 	// LatencyHelp is the help text for the latency metric
@@ -36,8 +41,13 @@ type FGSLatencyOpt struct {
 }
 
 type FGSTrafficOpt struct {
-	// TrafficName is the name of the traffic metric. If not specified, defaults to "{TrafficType}_requests_total"
-	TrafficName string
+	// TrafficName must be explicitly set.
+	// Should follow the pattern {system}_{type}_requests_total
+	// Examples:
+	// - http_server_requests_total
+	// - grpc_client_requests_total
+	// - database_operations_total
+	TrafficName string `validate:"required"`
 	// TrafficType is the type of traffic being measured (e.g., "http", "grpc")
 	TrafficType string `validate:"required"`
 	// TrafficHelp is the help text for the traffic metric
@@ -56,8 +66,13 @@ type FGSErrorsOpt struct {
 }
 
 type FGSSaturationOpt struct {
-	// SaturationName is the name of the saturation metric. If not specified, defaults to "{resource}_saturation_{unit}"
-	SaturationName string
+	// SaturationName must be explicitly set.
+	// Should follow the pattern {resource}_{type}_saturation_{unit}
+	// Examples:
+	// - memory_heap_saturation_bytes
+	// - threadpool_worker_saturation_ratio
+	// - connection_pool_saturation_percent
+	SaturationName string `validate:"required"`
 	// SaturationHelp is the help text for the saturation metric
 	SaturationHelp string `validate:"required"`
 	// SaturationLabels are the labels to attach to the saturation metric
@@ -159,17 +174,11 @@ func (f FourGoldenSignals) SaturationMetricName() string {
 }
 
 func getFGSLatencyMetricName(opts FourGoldenSignalsOpts) string {
-	if opts.LatencyOpt.LatencyName != "" {
-		return opts.LatencyOpt.LatencyName
-	}
-	return fmt.Sprintf("%s_latency_seconds", opts.LatencyOpt.LatencyType)
+	return opts.LatencyOpt.LatencyName
 }
 
 func getFGSTrafficMetricName(opts FourGoldenSignalsOpts) string {
-	if opts.TrafficOpt.TrafficName != "" {
-		return opts.TrafficOpt.TrafficName
-	}
-	return fmt.Sprintf("%s_requests_total", opts.TrafficOpt.TrafficType)
+	return opts.TrafficOpt.TrafficName
 }
 
 func getFGSErrorMetricName(opts FourGoldenSignalsOpts) string {
@@ -180,8 +189,5 @@ func getFGSErrorMetricName(opts FourGoldenSignalsOpts) string {
 }
 
 func getFGSSaturationMetricName(opts FourGoldenSignalsOpts) string {
-	if opts.SaturationOpt.SaturationName != "" {
-		return opts.SaturationOpt.SaturationName
-	}
-	return fmt.Sprintf("%s_saturation", opts.SaturationOpt.SaturationName)
+	return opts.SaturationOpt.SaturationName
 }
