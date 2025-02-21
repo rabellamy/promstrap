@@ -5,7 +5,7 @@
 ## Motivation
 Observability is challenging. The instrumentation of applications at scale to enable observability is even more challenging if teams do not understand the fundamentals of what they should be measuring and when to do so. This package was born from having to teach these concepts to various teams and having to  write the same bootstrapping code on many projects. This package aims to provide the guard rails for teams to expedite learning and more easily adopt proven instrumentation strategies while empowering teams to create and being good stewards of **[SL*s](https://sre.google/sre-book/service-level-objectives/)**.
 
-Besides providing a straightforward way of creating Prometheus counters, gauges, histograms and summaries, it also provides away to easily bootstrap well known intrumentation strategies that teams can reason about and leverage in their applications/system. This package was inspired by and uses language in it’s code comments verbatim from these resources:
+Besides providing a straightforward way of creating Prometheus counters, gauges, histograms and summaries, it also provides away to easily bootstrap well known intrumentation strategies that teams can reason about and leverage in their applications/system. This package was inspired by and uses language in it's code comments verbatim from these resources:
 - [Instrumenting Applications](https://training.promlabs.com/training/instrumenting-applications) - [PromLabs](https://promlabs.com/)
 - [Prometheus Metric Types](https://prometheus.io/docs/concepts/metric_types/)
 - [The USE Method](https://www.brendangregg.com/usemethod.html)
@@ -24,6 +24,43 @@ Here are some of the benefits of instrumenting applications with Prometheus:
 - Improved ability to identify and troubleshoot problems
 - Enhanced ability to prevent problems from occurring
 - Increased agility and responsiveness to changes
+
+## Metric Strategies
+
+### RED (Rate, Errors, Duration)
+A set of metrics that work well for monitoring request-handling services.
+
+#### Metric Names
+- **Requests**: Default format `{request_type}_requests_total` (e.g., `http_requests_total`)
+  - Can be customized via `RequestName` field
+- **Errors**: Default `errors_total`
+  - Can be customized via `ErrorName` field
+- **Duration**: Default format `{request_type}_request_duration_seconds` (e.g., `http_request_duration_seconds`)
+  - Can be customized via `DurationName` field
+
+### USE (Utilization, Saturation, Errors)
+Metrics useful for measuring performance and usage of resources.
+
+#### Metric Names
+- **Utilization**: Must be explicitly set via `UtilizationName`
+  - Required format: `{resource}_utilization_{unit}` (e.g., `cpu_utilization_ratio`, `memory_utilization_percent`)
+- **Saturation**: Must be explicitly set via `SaturationName`
+  - Required format: `{resource}_saturation_{unit}` (e.g., `memory_saturation_bytes`, `threadpool_saturation_pending_tasks`)
+- **Errors**: Default `errors_total`
+  - Can be customized via `ErrorName` field
+
+### FGS (Four Golden Signals)
+Metrics recommended by Google SRE for monitoring distributed systems.
+
+#### Metric Names
+- **Latency**: Must be explicitly set via `LatencyName`
+  - Required format: `{system}_{type}_latency_seconds` (e.g., `http_request_latency_seconds`, `grpc_method_latency_seconds`)
+- **Traffic**: Must be explicitly set via `TrafficName`
+  - Required format: `{system}_{type}_requests_total` (e.g., `http_server_requests_total`, `grpc_client_requests_total`)
+- **Errors**: Default `errors_total`
+  - Can be customized via `ErrorName` field
+- **Saturation**: Must be explicitly set via `SaturationName`
+  - Required format: `{resource}_{type}_saturation_{unit}` (e.g., `memory_heap_saturation_bytes`, `threadpool_worker_saturation_ratio`)
 
 ## Basic Usage
 
