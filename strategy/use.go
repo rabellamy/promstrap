@@ -49,7 +49,7 @@ type USESaturationOpt struct {
 	// The name should follow the pattern {resource}_saturation_{unit} to clearly indicate
 	// what resource is being measured and its unit of measurement.
 	// Examples:
-	// - cpu_saturation_load1
+	// - cpu_saturation_load
 	// - memory_saturation_bytes
 	// - disk_saturation_queue_depth
 	// - thread_pool_saturation_pending_tasks
