@@ -154,6 +154,9 @@ func TestNewUSE(t *testing.T) {
 			}
 			assert.EqualExportedValues(t, *want, *got)
 		})
+	}
+}
+
 func TestUSEMetricNames(t *testing.T) {
 	t.Parallel()
 
