@@ -120,15 +120,15 @@ func (r RED) Register() error {
 	return nil
 }
 
-func (r RED) RequestCounterName() string {
+func (r RED) RequestMetricName() string {
 	return getREDRequestsMetricName(r.redOpts)
 }
 
-func (r RED) ErrorCounterName() string {
+func (r RED) ErrorMetricName() string {
 	return getREDErrorsMetricName(r.redOpts)
 }
 
-func (r RED) DurationHistogramName() string {
+func (r RED) DurationMetricName() string {
 	return getREDDurationMetricName(r.redOpts)
 }
 

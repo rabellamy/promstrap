@@ -231,9 +231,9 @@ func TestREDMetricNames(t *testing.T) {
 	})
 
 	assert.NoError(t, err)
-	assert.Equal(t, "custom_requests", red.RequestCounterName())
-	assert.Equal(t, "custom_errors", red.ErrorCounterName())
-	assert.Equal(t, "custom_duration", red.DurationHistogramName())
+	assert.Equal(t, "custom_requests", red.RequestMetricName())
+	assert.Equal(t, "custom_errors", red.ErrorMetricName())
+	assert.Equal(t, "custom_duration", red.DurationMetricName())
 
 	// Test for default names
 	redDefault, err := NewRED(REDOpts{
@@ -251,7 +251,7 @@ func TestREDMetricNames(t *testing.T) {
 	})
 
 	assert.NoError(t, err)
-	assert.Equal(t, "http_requests_total", redDefault.RequestCounterName())
-	assert.Equal(t, "errors_total", redDefault.ErrorCounterName())
-	assert.Equal(t, "http_request_duration_seconds", redDefault.DurationHistogramName())
+	assert.Equal(t, "http_requests_total", redDefault.RequestMetricName())
+	assert.Equal(t, "errors_total", redDefault.ErrorMetricName())
+	assert.Equal(t, "http_request_duration_seconds", redDefault.DurationMetricName())
 }
