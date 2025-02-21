@@ -233,26 +233,4 @@ func TestUSEMetricNames(t *testing.T) {
 	assert.Equal(t, "custom_saturation", use.SaturationMetricName())
 	assert.Equal(t, "custom_errors", use.ErrorMetricName())
 
-	// Test for default names
-	useDefault, err := NewUSE(USEOpts{
-		Namespace: "test",
-		UtilizationOpt: USEUtilizationOpt{
-			UtilizationName:   "utilization",
-			UtilizationHelp:   "Test utilization help",
-			UtilizationLabels: []string{"label"},
-		},
-		SaturationOpt: USESaturationOpt{
-			SaturationName:   "saturation",
-			SaturationHelp:   "Test saturation help",
-			SaturationLabels: []string{"label"},
-		},
-		ErrorsOpt: USEErrorsOpt{
-			ErrorLabels: []string{"error"},
-		},
-	})
-
-	assert.NoError(t, err)
-	assert.Equal(t, "utilization", useDefault.UtilizationMetricName())
-	assert.Equal(t, "saturation", useDefault.SaturationMetricName())
-	assert.Equal(t, "errors_total", useDefault.ErrorMetricName())
 }

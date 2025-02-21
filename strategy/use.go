@@ -29,7 +29,7 @@ type USE struct {
 }
 
 type USEUtilizationOpt struct {
-	// UtilizationName is the name of the utilization metric. If not specified, defaults to "utilization".
+	// UtilizationName is the name of the utilization metric.
 	UtilizationName string `validate:"required"`
 	// UtilizationHelp is the help text for the utilization metric.
 	UtilizationHelp string `validate:"required"`
@@ -38,7 +38,7 @@ type USEUtilizationOpt struct {
 }
 
 type USESaturationOpt struct {
-	// SaturationName is the name of the saturation metric. If not specified, defaults to "saturation".
+	// SaturationName is the name of the saturation metric.
 	SaturationName string `validate:"required"`
 	// SaturationHelp is the help text for the saturation metric.
 	SaturationHelp string `validate:"required"`
@@ -135,17 +135,11 @@ func (u USE) ErrorMetricName() string {
 }
 
 func getUSEUtilizationMetricName(opts USEOpts) string {
-	if opts.UtilizationOpt.UtilizationName != "" {
-		return opts.UtilizationOpt.UtilizationName
-	}
-	return "utilization"
+	return opts.UtilizationOpt.UtilizationName
 }
 
 func getUSESaturationMetricName(opts USEOpts) string {
-	if opts.SaturationOpt.SaturationName != "" {
-		return opts.SaturationOpt.SaturationName
-	}
-	return "saturation"
+	return opts.SaturationOpt.SaturationName
 }
 
 func getUSEErrorsMetricName(opts USEOpts) string {
