@@ -24,51 +24,78 @@ type USE struct {
 	// Errors is the rate of requests that fail, either explicitly (e.g., HTTP 500s),
 	// implicitly (for example, an HTTP 200 success response, but coupled with the wrong content).
 	Errors *prometheus.CounterVec
+
+	useOpts USEOpts
+}
+
+type UtilizationOpt struct {
+	// UtilizationName is the name of the utilization metric. If not specified, defaults to "utilization".
+	UtilizationName string `validate:"required"`
+	// UtilizationHelp is the help text for the utilization metric.
+	UtilizationHelp string `validate:"required"`
+	// UtilizationLabels are the labels to attach to the utilization metric.
+	UtilizationLabels []string `validate:"required"`
+}
+
+type SaturationOpt struct {
+	// SaturationName is the name of the saturation metric. If not specified, defaults to "saturation".
+	SaturationName string `validate:"required"`
+	// SaturationHelp is the help text for the saturation metric.
+	SaturationHelp string `validate:"required"`
+	// SaturationLabels are the labels to attach to the saturation metric.
+	SaturationLabels []string `validate:"required"`
+}
+
+type ErrorsOpt struct {
+	// ErrorName is the name of the errors metric. If not specified, defaults to "errors_total".
+	ErrorName string
+	// ErrorLabels are the labels to attach to the errors metric.
+	ErrorLabels []string `validate:"required"`
 }
 
 // USEOpts is the options to create a USE strategy.
 type USEOpts struct {
-	Namespace         string   `validate:"required"`
-	SaturationName    string   `validate:"required"`
-	SaturationHelp    string   `validate:"required"`
-	SaturationLabels  []string `validate:"required"`
-	UtilizationName   string   `validate:"required"`
-	UtilizationHelp   string   `validate:"required"`
-	UtilizationLabels []string `validate:"required"`
+	Namespace      string         `validate:"required"`
+	UtilizationOpt UtilizationOpt `validate:"required"`
+	SaturationOpt  SaturationOpt  `validate:"required"`
+	ErrorsOpt      ErrorsOpt      `validate:"required"`
 }
 
-// NEWUSE creates a USE strategy.
+// NewUSE creates a USE strategy.
 func NewUSE(opts USEOpts) (*USE, error) {
 	validate := validator.New()
 	if err := validate.Struct(opts); err != nil {
 		return nil, err
 	}
 
+	utilizationName := getUtilizationMetricName(opts)
 	utilizationGauge, err := metrics.NewGaugeWithLabels(metrics.GaugeOpts{
 		Namespace: opts.Namespace,
-		Name:      opts.UtilizationName,
-		Help:      opts.UtilizationHelp,
-		Labels:    opts.UtilizationLabels,
+		Name:      utilizationName,
+		Help:      opts.UtilizationOpt.UtilizationHelp,
+		Labels:    opts.UtilizationOpt.UtilizationLabels,
 	})
 	if err != nil {
 		return nil, err
 	}
 
+	saturationName := getSaturationMetricName(opts)
 	saturationGauge, err := metrics.NewGaugeWithLabels(metrics.GaugeOpts{
 		Namespace: opts.Namespace,
-		Name:      opts.SaturationName,
-		Help:      opts.SaturationHelp,
-		Labels:    opts.SaturationLabels,
+		Name:      saturationName,
+		Help:      opts.SaturationOpt.SaturationHelp,
+		Labels:    opts.SaturationOpt.SaturationLabels,
 	})
 	if err != nil {
 		return nil, err
 	}
 
+	errorsName := getErrorsMetricName(opts)
 	errorsCounter, err := metrics.NewCounterWithLabels(metrics.CounterOpts{
 		Namespace: opts.Namespace,
-		Name:      "errors_total",
+		Name:      errorsName,
 		Help:      "Number of errors",
-		Labels:    []string{"error"},
+		Labels:    opts.ErrorsOpt.ErrorLabels,
 	})
 	if err != nil {
 		return nil, err
@@ -78,6 +105,7 @@ func NewUSE(opts USEOpts) (*USE, error) {
 		Utilization: utilizationGauge,
 		Saturation:  saturationGauge,
 		Errors:      errorsCounter,
+		useOpts:    opts,
 	}, nil
 }
 
@@ -89,4 +117,40 @@ func (u USE) Register() error {
 	}
 
 	return nil
+}
+
+// UtilizationGaugeName returns the name of the utilization metric.
+func (u USE) UtilizationGaugeName() string {
+	return getUtilizationMetricName(u.useOpts)
+}
+
+// SaturationGaugeName returns the name of the saturation metric.
+func (u USE) SaturationGaugeName() string {
+	return getSaturationMetricName(u.useOpts)
+}
+
+// ErrorCounterName returns the name of the errors metric.
+func (u USE) ErrorCounterName() string {
+	return getErrorsMetricName(u.useOpts)
+}
+
+func getUtilizationMetricName(opts USEOpts) string {
+	if opts.UtilizationOpt.UtilizationName != "" {
+		return opts.UtilizationOpt.UtilizationName
+	}
+	return "utilization"
+}
+
+func getSaturationMetricName(opts USEOpts) string {
+	if opts.SaturationOpt.SaturationName != "" {
+		return opts.SaturationOpt.SaturationName
+	}
+	return "saturation"
+}
+
+func getErrorsMetricName(opts USEOpts) string {
+	if opts.ErrorsOpt.ErrorName != "" {
+		return opts.ErrorsOpt.ErrorName
+	}
+	return "errors_total"
 }
