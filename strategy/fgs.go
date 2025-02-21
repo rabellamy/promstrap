@@ -1,8 +1,6 @@
 package strategy
 
 import (
-	"fmt"
-
 	"github.com/go-playground/validator"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/rabellamy/promstrap/metrics"
@@ -80,7 +78,7 @@ type FGSSaturationOpt struct {
 }
 
 type FourGoldenSignalsOpts struct {
-	Namespace     string          `validate:"required"`
+	Namespace     string           `validate:"required"`
 	LatencyOpt    FGSLatencyOpt    `validate:"required"`
 	TrafficOpt    FGSTrafficOpt    `validate:"required"`
 	ErrorsOpt     FGSErrorsOpt     `validate:"required"`
