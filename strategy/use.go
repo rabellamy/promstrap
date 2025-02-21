@@ -30,6 +30,13 @@ type USE struct {
 
 type USEUtilizationOpt struct {
 	// UtilizationName is the name of the utilization metric.
+	// The name should follow the pattern {resource}_utilization_ratio or {resource}_utilization_percent
+	// to clearly indicate what resource is being measured and that it represents utilization.
+	// Examples:
+	// - cpu_utilization_ratio
+	// - memory_utilization_percent
+	// - disk_busy_ratio
+	// - queue_utilization_ratio
 	UtilizationName string `validate:"required"`
 	// UtilizationHelp is the help text for the utilization metric.
 	UtilizationHelp string `validate:"required"`
