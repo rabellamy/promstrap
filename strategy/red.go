@@ -32,13 +32,6 @@ type RequestsOpt struct {
 	RequestLabels []string `validate:"required"`
 }
 
-type ErrorsOpt struct {
-	// ErrorName is the name of the errors metric. If not specified, defaults to "errors_total".
-	ErrorName string
-	// ErrorLabels are the labels to attach to the errors metric.
-	ErrorLabels []string `validate:"required"`
-}
-
 type DurationOpt struct {
 	// DurationName is the name of the duration metric. If not specified, defaults to "{RequestType}_request_duration_seconds".
 	DurationName string
@@ -82,7 +75,7 @@ func NewRED(opts REDOpts) (*RED, error) {
 	errors, err := metrics.NewCounterWithLabels(metrics.CounterOpts{
 		Namespace: opts.Namespace,
 		Name:      errorsName,
-		Help:      "Number of errors",
+		Help:      "Number of errors, RED",
 		Labels:    opts.ErrorsOpt.ErrorLabels,
 	})
 	if err != nil {
