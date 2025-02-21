@@ -43,9 +43,9 @@ Metrics useful for measuring performance and usage of resources.
 
 #### Metric Names
 - **Utilization**: Must be explicitly set via `UtilizationName`
-  - Required format: `{resource}_utilization_{unit}` (e.g., `cpu_utilization_ratio`, `memory_utilization_percent`)
+  - Recommended format: `{resource}_utilization_{unit}` (e.g., `cpu_utilization_ratio`, `memory_utilization_percent`)
 - **Saturation**: Must be explicitly set via `SaturationName`
-  - Required format: `{resource}_saturation_{unit}` (e.g., `memory_saturation_bytes`, `threadpool_saturation_pending_tasks`)
+  - Recommended format: `{resource}_saturation_{unit}` (e.g., `memory_saturation_bytes`, `threadpool_saturation_pending_tasks`)
 - **Errors**: Default `errors_total`
   - Can be customized via `ErrorName` field
 
@@ -54,13 +54,13 @@ Metrics recommended by Google SRE for monitoring distributed systems.
 
 #### Metric Names
 - **Latency**: Must be explicitly set via `LatencyName`
-  - Required format: `{system}_{type}_latency_seconds` (e.g., `http_request_latency_seconds`, `grpc_method_latency_seconds`)
+  - Recommended format: `{system}_{type}_latency_seconds` (e.g., `http_request_latency_seconds`, `grpc_method_latency_seconds`)
 - **Traffic**: Must be explicitly set via `TrafficName`
-  - Required format: `{system}_{type}_requests_total` (e.g., `http_server_requests_total`, `grpc_client_requests_total`)
+  - Recommended format: `{system}_{type}_requests_total` (e.g., `http_server_requests_total`, `grpc_client_requests_total`)
 - **Errors**: Default `errors_total`
   - Can be customized via `ErrorName` field
 - **Saturation**: Must be explicitly set via `SaturationName`
-  - Required format: `{resource}_{type}_saturation_{unit}` (e.g., `memory_heap_saturation_bytes`, `threadpool_worker_saturation_ratio`)
+  - Recommended format: `{resource}_{type}_saturation_{unit}` (e.g., `memory_heap_saturation_bytes`, `threadpool_worker_saturation_ratio`)
 
 ## Basic Usage
 
