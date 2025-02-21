@@ -31,7 +31,7 @@ func main() {
 			RequestType:   "http",
 			RequestLabels: []string{"path", "verb"},
 		},
-		ErrorsOpt: strategy.USEErrorOpt{
+		ErrorsOpt: strategy.REDErrorsOpt{
 			ErrorLabels: []string{"error"},
 		},
 		DurationOpt: strategy.REDDurationOpt{
