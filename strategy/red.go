@@ -23,7 +23,7 @@ type RED struct {
 	redOpts REDOpts
 }
 
-type RequestsOpt struct {
+type REDRequestsOpt struct {
 	// RequestName is the name of the requests metric. If not specified, defaults to "{RequestType}_requests_total".
 	RequestName string
 	// RequestType is the type of the request (e.g., "http", "grpc").
@@ -32,7 +32,14 @@ type RequestsOpt struct {
 	RequestLabels []string `validate:"required"`
 }
 
-type DurationOpt struct {
+type REDErrorsOpt struct {
+	// ErrorName is the name of the errors metric. If not specified, defaults to "errors_total".
+	ErrorName string
+	// ErrorLabels are the labels to attach to the errors metric.
+	ErrorLabels []string `validate:"required"`
+}
+
+type REDDurationOpt struct {
 	// DurationName is the name of the duration metric. If not specified, defaults to "{RequestType}_request_duration_seconds".
 	DurationName string
 	// DurationLabels are the labels to attach to the duration metric.
@@ -47,10 +54,10 @@ type DurationOpt struct {
 
 // REDOpts is the options to create a RED strategy.
 type REDOpts struct {
-	Namespace   string      `validate:"required"`
-	RequestsOpt RequestsOpt `validate:"required"`
-	ErrorsOpt   ErrorsOpt   `validate:"required"`
-	DurationOpt DurationOpt `validate:"required"`
+	Namespace   string         `validate:"required"`
+	RequestsOpt REDRequestsOpt `validate:"required"`
+	ErrorsOpt   REDErrorsOpt   `validate:"required"`
+	DurationOpt REDDurationOpt `validate:"required"`
 }
 
 // NewRED creates a RED strategy.
@@ -60,7 +67,7 @@ func NewRED(opts REDOpts) (*RED, error) {
 		return nil, err
 	}
 
-	requestsName := getRequestsMetricName(opts)
+	requestsName := getREDRequestsMetricName(opts)
 	requests, err := metrics.NewCounterWithLabels(metrics.CounterOpts{
 		Namespace: opts.Namespace,
 		Name:      requestsName,
@@ -71,7 +78,7 @@ func NewRED(opts REDOpts) (*RED, error) {
 		return nil, err
 	}
 
-	errorsName := getErrorsMetricName(opts)
+	errorsName := getREDErrorsMetricName(opts)
 	errors, err := metrics.NewCounterWithLabels(metrics.CounterOpts{
 		Namespace: opts.Namespace,
 		Name:      errorsName,
@@ -82,7 +89,7 @@ func NewRED(opts REDOpts) (*RED, error) {
 		return nil, err
 	}
 
-	durationName := getDurationMetricName(opts)
+	durationName := getREDDurationMetricName(opts)
 	duration, err := NewDistribution(DistributionOpts{
 		Namespace:  opts.Namespace,
 		Name:       durationName,
@@ -114,32 +121,32 @@ func (r RED) Register() error {
 }
 
 func (r RED) RequestCounterName() string {
-	return getRequestsMetricName(r.redOpts)
+	return getREDRequestsMetricName(r.redOpts)
 }
 
 func (r RED) ErrorCounterName() string {
-	return getErrorsMetricName(r.redOpts)
+	return getREDErrorsMetricName(r.redOpts)
 }
 
 func (r RED) DurationHistogramName() string {
-	return getDurationMetricName(r.redOpts)
+	return getREDDurationMetricName(r.redOpts)
 }
 
-func getRequestsMetricName(opts REDOpts) string {
+func getREDRequestsMetricName(opts REDOpts) string {
 	if opts.RequestsOpt.RequestName != "" {
 		return opts.RequestsOpt.RequestName
 	}
 	return fmt.Sprintf("%s_requests_total", opts.RequestsOpt.RequestType)
 }
 
-func getErrorsMetricName(opts REDOpts) string {
+func getREDErrorsMetricName(opts REDOpts) string {
 	if opts.ErrorsOpt.ErrorName != "" {
 		return opts.ErrorsOpt.ErrorName
 	}
 	return "errors_total"
 }
 
-func getDurationMetricName(opts REDOpts) string {
+func getREDDurationMetricName(opts REDOpts) string {
 	if opts.DurationOpt.DurationName != "" {
 		return opts.DurationOpt.DurationName
 	}

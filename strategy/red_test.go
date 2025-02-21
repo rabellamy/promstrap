@@ -18,14 +18,14 @@ func TestNewRED(t *testing.T) {
 		"default names": {
 			opts: REDOpts{
 				Namespace: "bar",
-				RequestsOpt: RequestsOpt{
+				RequestsOpt: REDRequestsOpt{
 					RequestType:   "foo",
 					RequestLabels: []string{"jazz", "wiz", "fizz"},
 				},
-				ErrorsOpt: ErrorsOpt{
+				ErrorsOpt: REDErrorsOpt{
 					ErrorLabels: []string{"error"},
 				},
-				DurationOpt: DurationOpt{
+				DurationOpt: REDDurationOpt{
 					DurationLabels: []string{"cuz", "buzz"},
 					Buckets:        []float64{.5, 1.5, 2.0},
 					Objectives:     map[float64]float64{0.5: 0.05, 0.9: 0.01, 0.99: 0.001},
@@ -62,16 +62,16 @@ func TestNewRED(t *testing.T) {
 		"custom names": {
 			opts: REDOpts{
 				Namespace: "bar",
-				RequestsOpt: RequestsOpt{
+				RequestsOpt: REDRequestsOpt{
 					RequestType:   "foo",
 					RequestName:   "custom_requests",
 					RequestLabels: []string{"jazz", "wiz", "fizz"},
 				},
-				ErrorsOpt: ErrorsOpt{
+				ErrorsOpt: REDErrorsOpt{
 					ErrorName:   "custom_errors",
 					ErrorLabels: []string{"error"},
 				},
-				DurationOpt: DurationOpt{
+				DurationOpt: REDDurationOpt{
 					DurationName:   "custom_duration",
 					DurationLabels: []string{"cuz", "buzz"},
 					Buckets:        []float64{.5, 1.5, 2.0},
@@ -109,13 +109,13 @@ func TestNewRED(t *testing.T) {
 		"missing RequestType": {
 			opts: REDOpts{
 				Namespace: "pineapple",
-				RequestsOpt: RequestsOpt{
+				RequestsOpt: REDRequestsOpt{
 					RequestLabels: []string{"jazz", "wiz", "fizz"},
 				},
-				ErrorsOpt: ErrorsOpt{
+				ErrorsOpt: REDErrorsOpt{
 					ErrorLabels: []string{"error"},
 				},
-				DurationOpt: DurationOpt{
+				DurationOpt: REDDurationOpt{
 					DurationLabels: []string{"cuz", "buzz"},
 				},
 			},
@@ -124,14 +124,14 @@ func TestNewRED(t *testing.T) {
 		},
 		"missing Namespace": {
 			opts: REDOpts{
-				RequestsOpt: RequestsOpt{
+				RequestsOpt: REDRequestsOpt{
 					RequestType:   "radish",
 					RequestLabels: []string{"jazz", "wiz", "fizz"},
 				},
-				ErrorsOpt: ErrorsOpt{
+				ErrorsOpt: REDErrorsOpt{
 					ErrorLabels: []string{"error"},
 				},
-				DurationOpt: DurationOpt{
+				DurationOpt: REDDurationOpt{
 					DurationLabels: []string{"cuz", "buzz"},
 				},
 			},
@@ -141,14 +141,14 @@ func TestNewRED(t *testing.T) {
 		"missing RequestLabels": {
 			opts: REDOpts{
 				Namespace: "pickle",
-				RequestsOpt: RequestsOpt{
+				RequestsOpt: REDRequestsOpt{
 					RequestType:   "dill",
 					RequestLabels: nil,
 				},
-				ErrorsOpt: ErrorsOpt{
+				ErrorsOpt: REDErrorsOpt{
 					ErrorLabels: []string{"error"},
 				},
-				DurationOpt: DurationOpt{
+				DurationOpt: REDDurationOpt{
 					DurationLabels: []string{"cuz", "buzz"},
 				},
 			},
@@ -158,14 +158,14 @@ func TestNewRED(t *testing.T) {
 		"missing DurationLabels": {
 			opts: REDOpts{
 				Namespace: "house",
-				RequestsOpt: RequestsOpt{
+				RequestsOpt: REDRequestsOpt{
 					RequestType:   "tiny",
 					RequestLabels: []string{"jazz", "wiz", "fizz"},
 				},
-				ErrorsOpt: ErrorsOpt{
+				ErrorsOpt: REDErrorsOpt{
 					ErrorLabels: []string{"error"},
 				},
-				DurationOpt: DurationOpt{
+				DurationOpt: REDDurationOpt{
 					DurationLabels: nil,
 				},
 			},
@@ -175,11 +175,11 @@ func TestNewRED(t *testing.T) {
 		"invalid buckets": {
 			opts: REDOpts{
 				Namespace: "bar",
-				RequestsOpt: RequestsOpt{
+				RequestsOpt: REDRequestsOpt{
 					RequestType:   "foo",
 					RequestLabels: []string{"label"},
 				},
-				DurationOpt: DurationOpt{
+				DurationOpt: REDDurationOpt{
 					DurationLabels: []string{"label"},
 					Buckets:        []float64{2.0, 1.0}, // Invalid order
 				},
@@ -215,16 +215,16 @@ func TestREDMetricNames(t *testing.T) {
 	// Test for custom names
 	red, err := NewRED(REDOpts{
 		Namespace: "test",
-		RequestsOpt: RequestsOpt{
+		RequestsOpt: REDRequestsOpt{
 			RequestType:   "http",
 			RequestName:   "custom_requests",
 			RequestLabels: []string{"method"},
 		},
-		ErrorsOpt: ErrorsOpt{
+		ErrorsOpt: REDErrorsOpt{
 			ErrorName:   "custom_errors",
 			ErrorLabels: []string{"type"},
 		},
-		DurationOpt: DurationOpt{
+		DurationOpt: REDDurationOpt{
 			DurationName:   "custom_duration",
 			DurationLabels: []string{"endpoint"},
 		},
@@ -238,14 +238,14 @@ func TestREDMetricNames(t *testing.T) {
 	// Test for default names
 	redDefault, err := NewRED(REDOpts{
 		Namespace: "test",
-		RequestsOpt: RequestsOpt{
+		RequestsOpt: REDRequestsOpt{
 			RequestType:   "http",
 			RequestLabels: []string{"method"},
 		},
-		ErrorsOpt: ErrorsOpt{
+		ErrorsOpt: REDErrorsOpt{
 			ErrorLabels: []string{"type"},
 		},
-		DurationOpt: DurationOpt{
+		DurationOpt: REDDurationOpt{
 			DurationLabels: []string{"endpoint"},
 		},
 	})
