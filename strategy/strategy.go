@@ -5,7 +5,7 @@ import (
 	"reflect"
 
 	"github.com/prometheus/client_golang/prometheus"
-	"github.com/rabellamy/promstrap/metrics"
+	"gitlab.alticeustech.com/platform-engineering/observability-infrastructure/promstrap/metrics"
 )
 
 // Strategy describes a collection of metrics built with a struct, allowing any multi-level

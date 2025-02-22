@@ -1,4 +1,4 @@
-module github.com/rabellamy/promstrap
+module gitlab.alticeustech.com/platform-engineering/observability-infrastructure/promstrap
 
 go 1.20
 

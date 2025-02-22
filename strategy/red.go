@@ -5,7 +5,7 @@ import (
 
 	"github.com/go-playground/validator"
 	"github.com/prometheus/client_golang/prometheus"
-	"github.com/rabellamy/promstrap/metrics"
+	"gitlab.alticeustech.com/platform-engineering/observability-infrastructure/promstrap/metrics"
 )
 
 // RED describes a set of metrics that work well for monitoring request-handling

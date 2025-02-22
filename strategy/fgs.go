@@ -3,7 +3,7 @@ package strategy
 import (
 	"github.com/go-playground/validator"
 	"github.com/prometheus/client_golang/prometheus"
-	"github.com/rabellamy/promstrap/metrics"
+	"gitlab.alticeustech.com/platform-engineering/observability-infrastructure/promstrap/metrics"
 )
 
 // FourGoldenSignals of monitoring are latency, traffic, errors, and saturation.
