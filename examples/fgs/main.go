@@ -5,7 +5,7 @@ import (
 	"net/http"
 
 	"github.com/prometheus/client_golang/prometheus/promhttp"
-	"github.com/rabellamy/promstrap/strategy"
+	"gitlab.alticeustech.com/platform-engineering/observability-infrastructure/promstrap/strategy"
 )
 
 func main() {
