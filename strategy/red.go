@@ -20,7 +20,7 @@ type RED struct {
 	// Distributions of the amount of time each request takes
 	Duration *Distribution
 
-	redOpts REDOpts
+	opts REDOpts
 }
 
 type REDRequestsOpt struct {
@@ -106,7 +106,7 @@ func NewRED(opts REDOpts) (*RED, error) {
 		Requests: requests,
 		Errors:   errors,
 		Duration: duration,
-		redOpts:  opts,
+		opts:     opts,
 	}, nil
 }
 
@@ -120,16 +120,25 @@ func (r RED) Register() error {
 	return nil
 }
 
+func (r RED) Collectors() map[string]prometheus.Collector {
+	return map[string]prometheus.Collector{
+		r.RequestMetricName():      r.Requests,
+		r.ErrorMetricName():        r.Errors,
+		r.Duration.HistogramName(): r.Duration.Histogram,
+		r.Duration.SummaryName():   r.Duration.Summary,
+	}
+}
+
 func (r RED) RequestMetricName() string {
-	return getREDRequestsMetricName(r.redOpts)
+	return getREDRequestsMetricName(r.opts)
 }
 
 func (r RED) ErrorMetricName() string {
-	return getREDErrorsMetricName(r.redOpts)
+	return getREDErrorsMetricName(r.opts)
 }
 
 func (r RED) DurationMetricName() string {
-	return getREDDurationMetricName(r.redOpts)
+	return getREDDurationMetricName(r.opts)
 }
 
 func getREDRequestsMetricName(opts REDOpts) string {

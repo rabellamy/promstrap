@@ -25,7 +25,7 @@ type USE struct {
 	// implicitly (for example, an HTTP 200 success response, but coupled with the wrong content).
 	Errors *prometheus.CounterVec
 
-	useOpts USEOpts
+	opts USEOpts
 }
 
 type USEUtilizationOpt struct {
@@ -119,7 +119,7 @@ func NewUSE(opts USEOpts) (*USE, error) {
 		Utilization: utilizationGauge,
 		Saturation:  saturationGauge,
 		Errors:      errorsCounter,
-		useOpts:     opts,
+		opts:        opts,
 	}, nil
 }
 
@@ -133,19 +133,27 @@ func (u USE) Register() error {
 	return nil
 }
 
+func (u USE) Collectors() map[string]prometheus.Collector {
+	return map[string]prometheus.Collector{
+		u.UtilizationMetricName(): u.Utilization,
+		u.SaturationMetricName():  u.Saturation,
+		u.ErrorMetricName():       u.Errors,
+	}
+}
+
 // UtilizationMetricName returns the name of the utilization metric.
 func (u USE) UtilizationMetricName() string {
-	return getUSEUtilizationMetricName(u.useOpts)
+	return getUSEUtilizationMetricName(u.opts)
 }
 
 // SaturationMetricName returns the name of the saturation metric.
 func (u USE) SaturationMetricName() string {
-	return getUSESaturationMetricName(u.useOpts)
+	return getUSESaturationMetricName(u.opts)
 }
 
 // ErrorMetricName returns the name of the errors metric.
 func (u USE) ErrorMetricName() string {
-	return getUSEErrorsMetricName(u.useOpts)
+	return getUSEErrorsMetricName(u.opts)
 }
 
 func getUSEUtilizationMetricName(opts USEOpts) string {

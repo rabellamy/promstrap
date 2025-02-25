@@ -15,7 +15,7 @@ type FourGoldenSignals struct {
 	Errors     *prometheus.CounterVec
 	Saturation *prometheus.GaugeVec
 
-	fgsOpts FourGoldenSignalsOpts
+	opts FourGoldenSignalsOpts
 }
 
 type FGSLatencyOpt struct {
@@ -142,7 +142,7 @@ func NewFourGoldenSignals(opts FourGoldenSignalsOpts) (*FourGoldenSignals, error
 		Traffic:    traffic,
 		Errors:     errors,
 		Saturation: saturation,
-		fgsOpts:    opts,
+		opts:       opts,
 	}, nil
 }
 
@@ -155,20 +155,30 @@ func (f FourGoldenSignals) Register() error {
 	return nil
 }
 
+func (f FourGoldenSignals) Collectors() map[string]prometheus.Collector {
+	return map[string]prometheus.Collector{
+		f.Latency.HistogramName(): f.Latency.Histogram,
+		f.Latency.SummaryName():   f.Latency.Summary,
+		f.TrafficMetricName():     f.Traffic,
+		f.ErrorMetricName():       f.Errors,
+		f.SaturationMetricName():  f.Saturation,
+	}
+}
+
 func (f FourGoldenSignals) LatencyMetricName() string {
-	return getFGSLatencyMetricName(f.fgsOpts)
+	return getFGSLatencyMetricName(f.opts)
 }
 
 func (f FourGoldenSignals) TrafficMetricName() string {
-	return getFGSTrafficMetricName(f.fgsOpts)
+	return getFGSTrafficMetricName(f.opts)
 }
 
 func (f FourGoldenSignals) ErrorMetricName() string {
-	return getFGSErrorMetricName(f.fgsOpts)
+	return getFGSErrorMetricName(f.opts)
 }
 
 func (f FourGoldenSignals) SaturationMetricName() string {
-	return getFGSSaturationMetricName(f.fgsOpts)
+	return getFGSSaturationMetricName(f.opts)
 }
 
 func getFGSLatencyMetricName(opts FourGoldenSignalsOpts) string {
