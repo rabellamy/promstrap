@@ -20,7 +20,6 @@ import (
 //	}
 type Strategy interface {
 	Register() error
-	Collectors() map[string]prometheus.Collector
 }
 
 // RegisterStrategyFields registers the fields of metrics and Strategies that

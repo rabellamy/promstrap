@@ -10,7 +10,7 @@ import (
 // If you can only measure four metrics of your user-facing system, focus on these four.
 // https://sre.google/sre-book/monitoring-distributed-systems/
 type FourGoldenSignals struct {
-	// Latency is the time it takes to service a request. It’s important to
+	// Latency is the time it takes to service a request. It's important to
 	// distinguish between the latency of successful requests and the latency of failed
 	// requests.
 	Latency *Distribution
@@ -167,16 +167,6 @@ func (f FourGoldenSignals) Register() error {
 	}
 
 	return nil
-}
-
-func (f FourGoldenSignals) Collectors() map[string]prometheus.Collector {
-	return map[string]prometheus.Collector{
-		f.Latency.HistogramName(): f.Latency.Histogram,
-		f.Latency.SummaryName():   f.Latency.Summary,
-		f.TrafficMetricName():     f.Traffic,
-		f.ErrorMetricName():       f.Errors,
-		f.SaturationMetricName():  f.Saturation,
-	}
 }
 
 func (f FourGoldenSignals) LatencyMetricName() string {

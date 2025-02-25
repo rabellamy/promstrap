@@ -120,15 +120,6 @@ func (r RED) Register() error {
 	return nil
 }
 
-func (r RED) Collectors() map[string]prometheus.Collector {
-	return map[string]prometheus.Collector{
-		r.RequestMetricName():      r.Requests,
-		r.ErrorMetricName():        r.Errors,
-		r.Duration.HistogramName(): r.Duration.Histogram,
-		r.Duration.SummaryName():   r.Duration.Summary,
-	}
-}
-
 func (r RED) RequestMetricName() string {
 	return getREDRequestsMetricName(r.opts)
 }

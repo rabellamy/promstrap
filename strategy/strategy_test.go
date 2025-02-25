@@ -20,12 +20,6 @@ func (m testValidStrategy) Register() error {
 	return nil
 }
 
-func (m testValidStrategy) Collectors() map[string]prometheus.Collector {
-	return map[string]prometheus.Collector{
-		"foo": m.Foo,
-	}
-}
-
 type testInvalidStrategy struct {
 	CounterOne *prometheus.CounterVec
 	CounterTwo *prometheus.CounterVec
@@ -38,10 +32,6 @@ func (m testInvalidStrategy) Register() error {
 	}
 
 	return nil
-}
-
-func (m testInvalidStrategy) Collectors() map[string]prometheus.Collector {
-	return map[string]prometheus.Collector{}
 }
 
 func TestRegisterStrategyFields(t *testing.T) {

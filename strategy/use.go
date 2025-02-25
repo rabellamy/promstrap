@@ -133,14 +133,6 @@ func (u USE) Register() error {
 	return nil
 }
 
-func (u USE) Collectors() map[string]prometheus.Collector {
-	return map[string]prometheus.Collector{
-		u.UtilizationMetricName(): u.Utilization,
-		u.SaturationMetricName():  u.Saturation,
-		u.ErrorMetricName():       u.Errors,
-	}
-}
-
 // UtilizationMetricName returns the name of the utilization metric.
 func (u USE) UtilizationMetricName() string {
 	return getUSEUtilizationMetricName(u.opts)

@@ -60,29 +60,3 @@ func TestNewDistribution(t *testing.T) {
 		})
 	}
 }
-
-func TestDistributionCollectors(t *testing.T) {
-	t.Parallel()
-
-	dist, err := NewDistribution(DistributionOpts{
-		Namespace:  "test",
-		Name:       "request_duration_seconds",
-		Help:       "Request duration in seconds",
-		Labels:     []string{"method", "path"},
-		Buckets:    []float64{.005, .01, .025, .05, .1, .25, .5, 1},
-		Objectives: map[float64]float64{0.5: 0.05, 0.9: 0.01, 0.99: 0.001},
-	})
-	assert.NoError(t, err)
-
-	collectors := dist.Collectors()
-
-	assert.Equal(t, 2, len(collectors))
-
-	for _, collector := range collectors {
-		switch collector.(type) {
-		case *prometheus.HistogramVec, *prometheus.SummaryVec:
-		default:
-			t.Errorf("Unexpected collector type: %T", collector)
-		}
-	}
-}

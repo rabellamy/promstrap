@@ -79,13 +79,6 @@ func (r Distribution) Register() error {
 	return nil
 }
 
-func (r Distribution) Collectors() map[string]prometheus.Collector {
-	return map[string]prometheus.Collector{
-		r.HistogramName(): r.Histogram,
-		r.SummaryName():   r.Summary,
-	}
-}
-
 func (r Distribution) HistogramName() string {
 	return getDistributionHistogramName(r.opts)
 }
