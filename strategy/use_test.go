@@ -17,25 +17,32 @@ func TestNewUSE(t *testing.T) {
 	}{
 		"all good": {
 			opts: USEOpts{
-				Namespace:         "foo",
-				UtilizationName:   "qux",
-				UtilizationHelp:   "quux",
-				UtilizationLabels: []string{"fred, plugh, xyzzy"},
-				SaturationName:    "bar",
-				SaturationHelp:    "baz",
-				SaturationLabels:  []string{"grault, garply, waldo"},
+				Namespace: "foo",
+				UtilizationOpt: USEUtilizationOpt{
+					UtilizationName:   "qux",
+					UtilizationHelp:   "quux",
+					UtilizationLabels: []string{"fred", "plugh", "xyzzy"},
+				},
+				SaturationOpt: USESaturationOpt{
+					SaturationName:   "bar",
+					SaturationHelp:   "baz",
+					SaturationLabels: []string{"grault", "garply", "waldo"},
+				},
+				ErrorsOpt: USEErrorsOpt{
+					ErrorLabels: []string{"error"},
+				},
 			},
 			want: &USE{
 				Utilization: prometheus.NewGaugeVec(prometheus.GaugeOpts{
 					Namespace: "foo",
 					Name:      "qux",
 					Help:      "quux",
-				}, []string{"fred, plugh, xyzzy"}),
+				}, []string{"fred", "plugh", "xyzzy"}),
 				Saturation: prometheus.NewGaugeVec(prometheus.GaugeOpts{
 					Namespace: "foo",
 					Name:      "bar",
 					Help:      "baz",
-				}, []string{"grault, garply, waldo"}),
+				}, []string{"grault", "garply", "waldo"}),
 				Errors: prometheus.NewCounterVec(prometheus.CounterOpts{
 					Namespace: "foo",
 					Name:      "errors_total",
@@ -46,91 +53,133 @@ func TestNewUSE(t *testing.T) {
 		},
 		"missing Namespace": {
 			opts: USEOpts{
-				Namespace:         "",
-				UtilizationName:   "qux",
-				UtilizationHelp:   "quux",
-				UtilizationLabels: []string{"fred, plugh, xyzzy"},
-				SaturationName:    "bar",
-				SaturationHelp:    "baz",
-				SaturationLabels:  []string{"grault, garply, waldo"},
+				UtilizationOpt: USEUtilizationOpt{
+					UtilizationName:   "qux",
+					UtilizationHelp:   "quux",
+					UtilizationLabels: []string{"fred", "plugh", "xyzzy"},
+				},
+				SaturationOpt: USESaturationOpt{
+					SaturationName:   "bar",
+					SaturationHelp:   "baz",
+					SaturationLabels: []string{"grault", "garply", "waldo"},
+				},
+				ErrorsOpt: USEErrorsOpt{
+					ErrorLabels: []string{"error"},
+				},
 			},
 			want:    nil,
 			wantErr: true,
 		},
 		"missing UtilizationName": {
 			opts: USEOpts{
-				Namespace:         "foo",
-				UtilizationName:   "",
-				UtilizationHelp:   "quux",
-				UtilizationLabels: []string{"fred, plugh, xyzzy"},
-				SaturationName:    "bar",
-				SaturationHelp:    "baz",
-				SaturationLabels:  []string{"grault, garply, waldo"},
+				Namespace: "foo",
+				UtilizationOpt: USEUtilizationOpt{
+					UtilizationHelp:   "quux",
+					UtilizationLabels: []string{"fred", "plugh", "xyzzy"},
+				},
+				SaturationOpt: USESaturationOpt{
+					SaturationName:   "bar",
+					SaturationHelp:   "baz",
+					SaturationLabels: []string{"grault", "garply", "waldo"},
+				},
+				ErrorsOpt: USEErrorsOpt{
+					ErrorLabels: []string{"error"},
+				},
 			},
 			want:    nil,
 			wantErr: true,
 		},
 		"missing UtilizationHelp": {
 			opts: USEOpts{
-				Namespace:         "foo",
-				UtilizationName:   "qux",
-				UtilizationHelp:   "",
-				UtilizationLabels: []string{"fred, plugh, xyzzy"},
-				SaturationName:    "bar",
-				SaturationHelp:    "baz",
-				SaturationLabels:  []string{"grault, garply, waldo"},
+				Namespace: "foo",
+				UtilizationOpt: USEUtilizationOpt{
+					UtilizationName:   "qux",
+					UtilizationLabels: []string{"fred", "plugh", "xyzzy"},
+				},
+				SaturationOpt: USESaturationOpt{
+					SaturationName:   "bar",
+					SaturationHelp:   "baz",
+					SaturationLabels: []string{"grault", "garply", "waldo"},
+				},
+				ErrorsOpt: USEErrorsOpt{
+					ErrorLabels: []string{"error"},
+				},
 			},
 			want:    nil,
 			wantErr: true,
 		},
 		"missing UtilizationLabels": {
 			opts: USEOpts{
-				Namespace:         "foo",
-				UtilizationName:   "qux",
-				UtilizationHelp:   "quux",
-				UtilizationLabels: nil,
-				SaturationName:    "bar",
-				SaturationHelp:    "baz",
-				SaturationLabels:  []string{"grault, garply, waldo"},
+				Namespace: "foo",
+				UtilizationOpt: USEUtilizationOpt{
+					UtilizationName: "qux",
+					UtilizationHelp: "quux",
+				},
+				SaturationOpt: USESaturationOpt{
+					SaturationName:   "bar",
+					SaturationHelp:   "baz",
+					SaturationLabels: []string{"grault", "garply", "waldo"},
+				},
+				ErrorsOpt: USEErrorsOpt{
+					ErrorLabels: []string{"error"},
+				},
 			},
 			want:    nil,
 			wantErr: true,
 		},
 		"missing SaturationName": {
 			opts: USEOpts{
-				Namespace:         "foo",
-				UtilizationName:   "qux",
-				UtilizationHelp:   "quux",
-				UtilizationLabels: []string{"fred, plugh, xyzzy"},
-				SaturationName:    "",
-				SaturationHelp:    "baz",
-				SaturationLabels:  []string{"grault, garply, waldo"},
+				Namespace: "foo",
+				UtilizationOpt: USEUtilizationOpt{
+					UtilizationName:   "qux",
+					UtilizationHelp:   "quux",
+					UtilizationLabels: []string{"fred", "plugh", "xyzzy"},
+				},
+				SaturationOpt: USESaturationOpt{
+					SaturationHelp:   "baz",
+					SaturationLabels: []string{"grault", "garply", "waldo"},
+				},
+				ErrorsOpt: USEErrorsOpt{
+					ErrorLabels: []string{"error"},
+				},
 			},
 			want:    nil,
 			wantErr: true,
 		},
 		"missing SaturationHelp": {
 			opts: USEOpts{
-				Namespace:         "foo",
-				UtilizationName:   "qux",
-				UtilizationHelp:   "quux",
-				UtilizationLabels: []string{"fred, plugh, xyzzy"},
-				SaturationName:    "bar",
-				SaturationHelp:    "",
-				SaturationLabels:  []string{"grault, garply, waldo"},
+				Namespace: "foo",
+				UtilizationOpt: USEUtilizationOpt{
+					UtilizationName:   "qux",
+					UtilizationHelp:   "quux",
+					UtilizationLabels: []string{"fred", "plugh", "xyzzy"},
+				},
+				SaturationOpt: USESaturationOpt{
+					SaturationName:   "bar",
+					SaturationLabels: []string{"grault", "garply", "waldo"},
+				},
+				ErrorsOpt: USEErrorsOpt{
+					ErrorLabels: []string{"error"},
+				},
 			},
 			want:    nil,
 			wantErr: true,
 		},
 		"missing SaturationLabels": {
 			opts: USEOpts{
-				Namespace:         "foo",
-				UtilizationName:   "qux",
-				UtilizationHelp:   "quux",
-				UtilizationLabels: []string{"fred, plugh, xyzzy"},
-				SaturationName:    "bar",
-				SaturationHelp:    "baz",
-				SaturationLabels:  nil,
+				Namespace: "foo",
+				UtilizationOpt: USEUtilizationOpt{
+					UtilizationName:   "qux",
+					UtilizationHelp:   "quux",
+					UtilizationLabels: []string{"fred", "plugh", "xyzzy"},
+				},
+				SaturationOpt: USESaturationOpt{
+					SaturationName: "bar",
+					SaturationHelp: "baz",
+				},
+				ErrorsOpt: USEErrorsOpt{
+					ErrorLabels: []string{"error"},
+				},
 			},
 			want:    nil,
 			wantErr: true,
@@ -155,4 +204,33 @@ func TestNewUSE(t *testing.T) {
 			assert.EqualExportedValues(t, *want, *got)
 		})
 	}
+}
+
+func TestUSEMetricNames(t *testing.T) {
+	t.Parallel()
+
+	// Test for custom names
+	use, err := NewUSE(USEOpts{
+		Namespace: "test",
+		UtilizationOpt: USEUtilizationOpt{
+			UtilizationName:   "custom_utilization",
+			UtilizationHelp:   "Test utilization help",
+			UtilizationLabels: []string{"label"},
+		},
+		SaturationOpt: USESaturationOpt{
+			SaturationName:   "custom_saturation",
+			SaturationHelp:   "Test saturation help",
+			SaturationLabels: []string{"label"},
+		},
+		ErrorsOpt: USEErrorsOpt{
+			ErrorName:   "custom_errors",
+			ErrorLabels: []string{"error"},
+		},
+	})
+
+	assert.NoError(t, err)
+	assert.Equal(t, "custom_utilization", use.UtilizationMetricName())
+	assert.Equal(t, "custom_saturation", use.SaturationMetricName())
+	assert.Equal(t, "custom_errors", use.ErrorMetricName())
+
 }

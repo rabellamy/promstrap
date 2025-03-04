@@ -8,7 +8,7 @@ import (
 
 	"github.com/go-chi/chi"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
-	"github.com/rabellamy/promstrap/strategy"
+	"gitlab.alticeustech.com/platform-engineering/observability-infrastructure/promstrap/strategy"
 )
 
 type workTimeBox struct {
@@ -26,10 +26,17 @@ func main() {
 	var err error
 
 	redExample, err := strategy.NewRED(strategy.REDOpts{
-		RequestType:    "http",
-		Namespace:      "bar",
-		RequestLabels:  []string{"path", "verb"},
-		DurationLabels: []string{"path"},
+		Namespace: "bar",
+		RequestsOpt: strategy.REDRequestsOpt{
+			RequestType:   "http",
+			RequestLabels: []string{"path", "verb"},
+		},
+		ErrorsOpt: strategy.REDErrorsOpt{
+			ErrorLabels: []string{"error"},
+		},
+		DurationOpt: strategy.REDDurationOpt{
+			DurationLabels: []string{"path"},
+		},
 	})
 	if err != nil {
 		fmt.Println(err.Error())
