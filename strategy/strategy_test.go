@@ -8,7 +8,8 @@ import (
 )
 
 type testValidStrategy struct {
-	Foo *prometheus.CounterVec
+	Foo        *prometheus.CounterVec
+	unexported *prometheus.CounterVec
 }
 
 func (m testValidStrategy) Register() error {
@@ -62,7 +63,8 @@ func TestRegisterStrategyFields(t *testing.T) {
 	}
 
 	validComplexMetric := testValidStrategy{
-		Foo: testCounter,
+		Foo:        testCounter,
+		unexported: duplicateCounter,
 	}
 
 	invalidStrategy := testInvalidStrategy{
