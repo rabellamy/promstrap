@@ -4,7 +4,7 @@ import (
 	"testing"
 
 	"github.com/prometheus/client_golang/prometheus"
-	"gitlab.alticeustech.com/platform-engineering/observability-infrastructure/promstrap/metrics"
+	"github.com/rabellamy/promstrap/metrics"
 )
 
 type testValidStrategy struct {

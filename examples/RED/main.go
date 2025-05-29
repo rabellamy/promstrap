@@ -8,7 +8,7 @@ import (
 
 	"github.com/go-chi/chi"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
-	"gitlab.alticeustech.com/platform-engineering/observability-infrastructure/promstrap/strategy"
+	"github.com/rabellamy/promstrap/strategy"
 )
 
 type workTimeBox struct {

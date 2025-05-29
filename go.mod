@@ -1,6 +1,8 @@
-module gitlab.alticeustech.com/platform-engineering/observability-infrastructure/promstrap
+module github.com/rabellamy/promstrap
 
-go 1.20
+go 1.22
+
+toolchain go1.24.2
 
 require (
 	github.com/go-chi/chi v1.5.4
