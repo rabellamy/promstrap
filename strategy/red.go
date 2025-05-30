@@ -19,13 +19,30 @@ type RED struct {
 	Errors *prometheus.CounterVec
 	// Distributions of the amount of time each request takes
 	Duration *Distribution
+
+	opts REDOpts
 }
 
-// REDOpts is the options to create a RED strategy.
-type REDOpts struct {
-	RequestType    string   `validate:"required"`
-	Namespace      string   `validate:"required"`
-	RequestLabels  []string `validate:"required"`
+type REDRequestsOpt struct {
+	// RequestName is the name of the requests metric. If not specified, defaults to "{RequestType}_requests_total".
+	RequestName string
+	// RequestType is the type of the request (e.g., "http", "grpc").
+	RequestType string `validate:"required"`
+	// RequestLabels are the labels to attach to the requests metric.
+	RequestLabels []string `validate:"required"`
+}
+
+type REDErrorsOpt struct {
+	// ErrorName is the name of the errors metric. If not specified, defaults to "errors_total".
+	ErrorName string
+	// ErrorLabels are the labels to attach to the errors metric.
+	ErrorLabels []string `validate:"required"`
+}
+
+type REDDurationOpt struct {
+	// DurationName is the name of the duration metric. If not specified, defaults to "{RequestType}_request_duration_seconds".
+	DurationName string
+	// DurationLabels are the labels to attach to the duration metric.
 	DurationLabels []string `validate:"required"`
 	// Buckets defines the histogram buckets into which observations are counted. Each
 	// element in the slice is the upper inclusive bound of a bucket.
@@ -35,6 +52,14 @@ type REDOpts struct {
 	Objectives map[float64]float64
 }
 
+// REDOpts is the options to create a RED strategy.
+type REDOpts struct {
+	Namespace   string         `validate:"required"`
+	RequestsOpt REDRequestsOpt `validate:"required"`
+	ErrorsOpt   REDErrorsOpt   `validate:"required"`
+	DurationOpt REDDurationOpt `validate:"required"`
+}
+
 // NewRED creates a RED strategy.
 func NewRED(opts REDOpts) (*RED, error) {
 	validate := validator.New()
@@ -42,33 +67,36 @@ func NewRED(opts REDOpts) (*RED, error) {
 		return nil, err
 	}
 
+	requestsName := getREDRequestsMetricName(opts)
 	requests, err := metrics.NewCounterWithLabels(metrics.CounterOpts{
 		Namespace: opts.Namespace,
-		Name:      fmt.Sprintf("%s_requests_total", opts.RequestType),
+		Name:      requestsName,
 		Help:      "Number of requests",
-		Labels:    opts.RequestLabels,
+		Labels:    opts.RequestsOpt.RequestLabels,
 	})
 	if err != nil {
 		return nil, err
 	}
 
+	errorsName := getREDErrorsMetricName(opts)
 	errors, err := metrics.NewCounterWithLabels(metrics.CounterOpts{
 		Namespace: opts.Namespace,
-		Name:      "errors_total",
-		Help:      "Number of errors",
-		Labels:    []string{"error"},
+		Name:      errorsName,
+		Help:      "Number of errors, RED",
+		Labels:    opts.ErrorsOpt.ErrorLabels,
 	})
 	if err != nil {
 		return nil, err
 	}
 
+	durationName := getREDDurationMetricName(opts)
 	duration, err := NewDistribution(DistributionOpts{
 		Namespace:  opts.Namespace,
-		Name:       fmt.Sprintf("%s_request_duration_seconds", opts.RequestType),
+		Name:       durationName,
 		Help:       "Duration of request in seconds",
-		Labels:     opts.DurationLabels,
-		Buckets:    opts.Buckets,
-		Objectives: opts.Objectives,
+		Labels:     opts.DurationOpt.DurationLabels,
+		Buckets:    opts.DurationOpt.Buckets,
+		Objectives: opts.DurationOpt.Objectives,
 	})
 	if err != nil {
 		return nil, err
@@ -78,6 +106,7 @@ func NewRED(opts REDOpts) (*RED, error) {
 		Requests: requests,
 		Errors:   errors,
 		Duration: duration,
+		opts:     opts,
 	}, nil
 }
 
@@ -89,4 +118,37 @@ func (r RED) Register() error {
 	}
 
 	return nil
+}
+
+func (r RED) RequestMetricName() string {
+	return getREDRequestsMetricName(r.opts)
+}
+
+func (r RED) ErrorMetricName() string {
+	return getREDErrorsMetricName(r.opts)
+}
+
+func (r RED) DurationMetricName() string {
+	return getREDDurationMetricName(r.opts)
+}
+
+func getREDRequestsMetricName(opts REDOpts) string {
+	if opts.RequestsOpt.RequestName != "" {
+		return opts.RequestsOpt.RequestName
+	}
+	return fmt.Sprintf("%s_requests_total", opts.RequestsOpt.RequestType)
+}
+
+func getREDErrorsMetricName(opts REDOpts) string {
+	if opts.ErrorsOpt.ErrorName != "" {
+		return opts.ErrorsOpt.ErrorName
+	}
+	return "errors_total"
+}
+
+func getREDDurationMetricName(opts REDOpts) string {
+	if opts.DurationOpt.DurationName != "" {
+		return opts.DurationOpt.DurationName
+	}
+	return fmt.Sprintf("%s_request_duration_seconds", opts.RequestsOpt.RequestType)
 }

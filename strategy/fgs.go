@@ -10,7 +10,7 @@ import (
 // If you can only measure four metrics of your user-facing system, focus on these four.
 // https://sre.google/sre-book/monitoring-distributed-systems/
 type FourGoldenSignals struct {
-	// Latency is the time it takes to service a request. It’s important to
+	// Latency is the time it takes to service a request. It's important to
 	// distinguish between the latency of successful requests and the latency of failed
 	// requests.
 	Latency *Distribution
@@ -28,72 +28,124 @@ type FourGoldenSignals struct {
 	// show memory; in an I/O-constrained system, show I/O or another example could be
 	// scheduler run queue length).
 	Saturation *prometheus.GaugeVec
+
+	opts FourGoldenSignalsOpts
 }
 
-// FourGoldenSignalsOpts is the options for a FourGoldenSignals strategy.
-type FourGoldenSignalsOpts struct {
-	Namespace     string   `validate:"required"`
-	LatencyName   string   `validate:"required"`
-	LatencyHelp   string   `validate:"required"`
+type FGSLatencyOpt struct {
+	// LatencyName must be explicitly set.
+	// Should follow the pattern {system}_{type}_latency_seconds
+	// Examples:
+	// - http_request_latency_seconds
+	// - grpc_method_latency_seconds
+	// - database_query_latency_seconds
+	LatencyName string `validate:"required"`
+	// LatencyType is the type of latency being measured (e.g., "http", "grpc", "database")
+	LatencyType string `validate:"required"`
+	// LatencyHelp is the help text for the latency metric
+	LatencyHelp string `validate:"required"`
+	// LatencyLabels are the labels to attach to the latency metric
 	LatencyLabels []string `validate:"required"`
-	// Buckets defines the histogram buckets into which observations are counted. Each
-	// element in the slice is the upper inclusive bound of a bucket.
-	LatencyBuckets []float64
-	// Objectives defines the summary quantile rank estimates with their respective
-	// absolute error.
-	LatencyObjectives map[float64]float64
-	TrafficName       string   `validate:"required"`
-	TrafficHelp       string   `validate:"required"`
-	TrafficLabels     []string `validate:"required"`
-	SaturationName    string   `validate:"required"`
-	SaturationHelp    string   `validate:"required"`
-	SaturationLabels  []string `validate:"required"`
+	// Buckets defines the histogram buckets into which observations are counted
+	Buckets []float64
+	// Objectives defines the quantile rank estimates with their respective absolute error
+	Objectives map[float64]float64
 }
 
-// NewFourGoldenSignals creates a new FourGoldenSignals strategy.
+type FGSTrafficOpt struct {
+	// TrafficName must be explicitly set.
+	// Should follow the pattern {system}_{type}_requests_total
+	// Examples:
+	// - http_server_requests_total
+	// - grpc_client_requests_total
+	// - database_operations_total
+	TrafficName string `validate:"required"`
+	// TrafficType is the type of traffic being measured (e.g., "http", "grpc")
+	TrafficType string `validate:"required"`
+	// TrafficHelp is the help text for the traffic metric
+	TrafficHelp string `validate:"required"`
+	// TrafficLabels are the labels to attach to the traffic metric
+	TrafficLabels []string `validate:"required"`
+}
+
+type FGSErrorsOpt struct {
+	// ErrorName is the name of the errors metric. If not specified, defaults to "errors_total"
+	ErrorName string
+	// ErrorHelp is the help text for the errors metric
+	ErrorHelp string `validate:"required"`
+	// ErrorLabels are the labels to attach to the errors metric
+	ErrorLabels []string `validate:"required"`
+}
+
+type FGSSaturationOpt struct {
+	// SaturationName must be explicitly set.
+	// Should follow the pattern {resource}_{type}_saturation_{unit}
+	// Examples:
+	// - memory_heap_saturation_bytes
+	// - threadpool_worker_saturation_ratio
+	// - connection_pool_saturation_percent
+	SaturationName string `validate:"required"`
+	// SaturationHelp is the help text for the saturation metric
+	SaturationHelp string `validate:"required"`
+	// SaturationLabels are the labels to attach to the saturation metric
+	SaturationLabels []string `validate:"required"`
+}
+
+type FourGoldenSignalsOpts struct {
+	Namespace     string           `validate:"required"`
+	LatencyOpt    FGSLatencyOpt    `validate:"required"`
+	TrafficOpt    FGSTrafficOpt    `validate:"required"`
+	ErrorsOpt     FGSErrorsOpt     `validate:"required"`
+	SaturationOpt FGSSaturationOpt `validate:"required"`
+}
+
 func NewFourGoldenSignals(opts FourGoldenSignalsOpts) (*FourGoldenSignals, error) {
 	validate := validator.New()
 	if err := validate.Struct(opts); err != nil {
 		return nil, err
 	}
 
+	latencyName := getFGSLatencyMetricName(opts)
 	latency, err := NewDistribution(DistributionOpts{
 		Namespace:  opts.Namespace,
-		Name:       opts.LatencyName,
-		Help:       opts.LatencyHelp,
-		Labels:     opts.LatencyLabels,
-		Buckets:    opts.LatencyBuckets,
-		Objectives: opts.LatencyObjectives,
+		Name:       latencyName,
+		Help:       opts.LatencyOpt.LatencyHelp,
+		Labels:     opts.LatencyOpt.LatencyLabels,
+		Buckets:    opts.LatencyOpt.Buckets,
+		Objectives: opts.LatencyOpt.Objectives,
 	})
 	if err != nil {
 		return nil, err
 	}
 
+	trafficName := getFGSTrafficMetricName(opts)
 	traffic, err := metrics.NewCounterWithLabels(metrics.CounterOpts{
 		Namespace: opts.Namespace,
-		Name:      opts.TrafficName,
-		Help:      opts.TrafficHelp,
-		Labels:    opts.TrafficLabels,
+		Name:      trafficName,
+		Help:      opts.TrafficOpt.TrafficHelp,
+		Labels:    opts.TrafficOpt.TrafficLabels,
 	})
 	if err != nil {
 		return nil, err
 	}
 
+	errorsName := getFGSErrorMetricName(opts)
 	errors, err := metrics.NewCounterWithLabels(metrics.CounterOpts{
 		Namespace: opts.Namespace,
-		Name:      "errors_total",
-		Help:      "Number of errors",
-		Labels:    []string{"error"},
+		Name:      errorsName,
+		Help:      opts.ErrorsOpt.ErrorHelp,
+		Labels:    opts.ErrorsOpt.ErrorLabels,
 	})
 	if err != nil {
 		return nil, err
 	}
 
+	saturationName := getFGSSaturationMetricName(opts)
 	saturation, err := metrics.NewGaugeWithLabels(metrics.GaugeOpts{
 		Namespace: opts.Namespace,
-		Name:      opts.SaturationName,
-		Help:      opts.SaturationHelp,
-		Labels:    opts.SaturationLabels,
+		Name:      saturationName,
+		Help:      opts.SaturationOpt.SaturationHelp,
+		Labels:    opts.SaturationOpt.SaturationLabels,
 	})
 	if err != nil {
 		return nil, err
@@ -104,11 +156,10 @@ func NewFourGoldenSignals(opts FourGoldenSignalsOpts) (*FourGoldenSignals, error
 		Traffic:    traffic,
 		Errors:     errors,
 		Saturation: saturation,
+		opts:       opts,
 	}, nil
 }
 
-// Register registers the FourGoldenSignals strategy with the Prometheus
-// DefaultRegisterer.
 func (f FourGoldenSignals) Register() error {
 	err := RegisterStrategyFields(f)
 	if err != nil {
@@ -116,4 +167,39 @@ func (f FourGoldenSignals) Register() error {
 	}
 
 	return nil
+}
+
+func (f FourGoldenSignals) LatencyMetricName() string {
+	return getFGSLatencyMetricName(f.opts)
+}
+
+func (f FourGoldenSignals) TrafficMetricName() string {
+	return getFGSTrafficMetricName(f.opts)
+}
+
+func (f FourGoldenSignals) ErrorMetricName() string {
+	return getFGSErrorMetricName(f.opts)
+}
+
+func (f FourGoldenSignals) SaturationMetricName() string {
+	return getFGSSaturationMetricName(f.opts)
+}
+
+func getFGSLatencyMetricName(opts FourGoldenSignalsOpts) string {
+	return opts.LatencyOpt.LatencyName
+}
+
+func getFGSTrafficMetricName(opts FourGoldenSignalsOpts) string {
+	return opts.TrafficOpt.TrafficName
+}
+
+func getFGSErrorMetricName(opts FourGoldenSignalsOpts) string {
+	if opts.ErrorsOpt.ErrorName != "" {
+		return opts.ErrorsOpt.ErrorName
+	}
+	return "errors_total"
+}
+
+func getFGSSaturationMetricName(opts FourGoldenSignalsOpts) string {
+	return opts.SaturationOpt.SaturationName
 }

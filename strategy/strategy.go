@@ -5,6 +5,7 @@ import (
 	"reflect"
 
 	"github.com/prometheus/client_golang/prometheus"
+	"github.com/rabellamy/promstrap/metrics"
 )
 
 // Strategy describes a collection of metrics built with a struct, allowing any multi-level
@@ -32,9 +33,16 @@ func RegisterStrategyFields(s Strategy) error {
 	values := reflect.ValueOf(s)
 
 	for i := 0; i < l; i++ {
-		switch v := values.Field(i).Interface().(type) {
+		fieldValue := values.Field(i)
+		if !fieldValue.CanInterface() {
+			continue
+		}
+		switch v := fieldValue.Interface().(type) {
 		case prometheus.Collector:
-			prometheus.MustRegister(v)
+			err := metrics.RegisterCollectors(v)
+			if err != nil {
+				return err
+			}
 
 		// Allows for the composability of strategies
 		case Strategy:

@@ -8,10 +8,25 @@ import (
 )
 
 type testValidStrategy struct {
-	Foo *prometheus.CounterVec
+	Foo        *prometheus.CounterVec
+	unexported *prometheus.CounterVec
 }
 
 func (m testValidStrategy) Register() error {
+	err := RegisterStrategyFields(m)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+type testInvalidStrategy struct {
+	CounterOne *prometheus.CounterVec
+	CounterTwo *prometheus.CounterVec
+}
+
+func (m testInvalidStrategy) Register() error {
 	err := RegisterStrategyFields(m)
 	if err != nil {
 		return err
@@ -31,12 +46,30 @@ func TestRegisterStrategyFields(t *testing.T) {
 		Help:      "bar",
 		Labels:    []string{"baz"},
 	})
+
 	if err != nil {
-		t.Errorf(err.Error())
+		t.Error(err)
+	}
+
+	duplicateCounter, err := metrics.NewCounterWithLabels(metrics.CounterOpts{
+		Namespace: "duplicate_counter",
+		Name:      "duplicate",
+		Help:      "duplicate test",
+		Labels:    []string{"baz"},
+	})
+
+	if err != nil {
+		t.Error(err)
 	}
 
 	validComplexMetric := testValidStrategy{
-		Foo: testCounter,
+		Foo:        testCounter,
+		unexported: duplicateCounter,
+	}
+
+	invalidStrategy := testInvalidStrategy{
+		CounterOne: duplicateCounter,
+		CounterTwo: duplicateCounter,
 	}
 
 	tests := map[string]struct {
@@ -48,6 +81,10 @@ func TestRegisterStrategyFields(t *testing.T) {
 			wantErr:  false,
 		},
 		// TODO: more test cases
+		"invalid strategy": {
+			strategy: invalidStrategy,
+			wantErr:  true,
+		},
 	}
 
 	for name, tt := range tests {

@@ -13,6 +13,7 @@ import (
 type Distribution struct {
 	Histogram *prometheus.HistogramVec
 	Summary   *prometheus.SummaryVec
+	opts      DistributionOpts
 }
 
 // DistributionOpts is the options to create a Distribution
@@ -37,9 +38,10 @@ func NewDistribution(opts DistributionOpts) (*Distribution, error) {
 		return nil, err
 	}
 
+	histogramName := getDistributionHistogramName(opts)
 	histogram, err := metrics.NewHistogramWithLabels(metrics.HistogramOpts{
 		Namespace: opts.Namespace,
-		Name:      fmt.Sprintf("%s_hist", opts.Name),
+		Name:      histogramName,
 		Help:      opts.Help,
 		Labels:    opts.Labels,
 		Buckets:   opts.Buckets,
@@ -48,9 +50,10 @@ func NewDistribution(opts DistributionOpts) (*Distribution, error) {
 		return nil, err
 	}
 
+	summaryName := getDistributionSummaryName(opts)
 	summary, err := metrics.NewSummaryWithLabels(metrics.SummaryOpts{
 		Namespace:  opts.Namespace,
-		Name:       fmt.Sprintf("%s_sum", opts.Name),
+		Name:       summaryName,
 		Help:       opts.Help,
 		Labels:     opts.Labels,
 		Objectives: opts.Objectives,
@@ -74,4 +77,20 @@ func (r Distribution) Register() error {
 	}
 
 	return nil
+}
+
+func (r Distribution) HistogramName() string {
+	return getDistributionHistogramName(r.opts)
+}
+
+func (r Distribution) SummaryName() string {
+	return getDistributionSummaryName(r.opts)
+}
+
+func getDistributionHistogramName(opts DistributionOpts) string {
+	return fmt.Sprintf("%s_hist", opts.Name)
+}
+
+func getDistributionSummaryName(opts DistributionOpts) string {
+	return fmt.Sprintf("%s_sum", opts.Name)
 }
