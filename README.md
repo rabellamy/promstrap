@@ -5,7 +5,7 @@
 ## Motivation
 Observability is challenging. The instrumentation of applications at scale to enable observability is even more challenging if teams do not understand the fundamentals of what they should be measuring and when to do so. This package was born from having to teach these concepts to various teams and having to  write the same bootstrapping code on many projects. This package aims to provide the guard rails for teams to expedite learning and more easily adopt proven instrumentation strategies while empowering teams to create and being good stewards of **[SL*s](https://sre.google/sre-book/service-level-objectives/)**.
 
-Besides providing a straightforward way of creating Prometheus counters, gauges, histograms and summaries, it also provides a way to easily bootstrap well known intrumentation strategies that teams can reason about and leverage in their applications/system. This package was inspired by and uses language in it's code comments verbatim from these resources:
+Besides providing a straightforward way of creating Prometheus counters, gauges, histograms and summaries, it also provides a way to easily bootstrap well known instrumentation strategies that teams can reason about and leverage in their applications/system. This package was inspired by and uses language in it's code comments verbatim from these resources:
 - [Instrumenting Applications](https://training.promlabs.com/training/instrumenting-applications) - [PromLabs](https://promlabs.com/)
 - [Prometheus Metric Types](https://prometheus.io/docs/concepts/metric_types/)
 - [The USE Method](https://www.brendangregg.com/usemethod.html)
